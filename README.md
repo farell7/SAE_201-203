@@ -13,23 +13,47 @@
 ```
 ResaUGE-Project/
 │
-├── CSS/                # Feuilles de style pour chaque interface
-├── img/                # Images et icônes utilisées dans l'app
-├── JS/                 # Scripts JavaScript pour l'interactivité
-├── PHP/                # Pages PHP pour chaque profil utilisateur
-├── README.md           # Ce fichier
-├── index.html          # Page d'accueil
-└── ...
+├── index.html          # Page de connexion principale
+├── CSS/               # Feuilles de style
+│   ├── styleindex.css  # Style de la page de connexion
+│   ├── styleadmin.css  # Style interface admin
+│   └── ...            # Autres styles
+├── HTML/              # Pages HTML par profil
+│   ├── admin.html     # Interface administrateur
+│   ├── agent.html     # Interface agent
+│   ├── teacher.html   # Interface enseignant
+│   └── student.html   # Interface étudiant
+├── PHP/               # Scripts PHP
+│   ├── connexion.php  # Configuration base de données
+│   ├── index.php      # Traitement connexion
+│   └── ...           # Autres scripts PHP
+├── uploads/           # Dossier pour les fichiers uploadés
+├── img/               # Images et ressources
+└── README.md          # Documentation
 ```
 
+## Installation
+1. Cloner le dépôt
+2. Configurer la base de données dans `PHP/connexion.php`
+3. Importer le fichier SQL fourni dans `PHP/database.sql`
+4. Configurer le serveur web (Apache/XAMPP) pour pointer vers le dossier du projet
+
 ## Technologies utilisées
-- PHP (backend)
-- HTML5, CSS3 (frontend)
-- JavaScript (animations et interactions)
-- MySQL (base de données)
+- PHP 8.x
+- HTML5, CSS3
+- JavaScript
+- MySQL/MariaDB
+- Apache/XAMPP
+
+## Configuration requise
+- Serveur web Apache
+- PHP 8.0 ou supérieur
+- MySQL 5.7 ou supérieur
+- Extension PHP PDO activée
 
 ## Auteurs
-- Projet réalisé par l'équipe ResaUGE, Université Gustave Eiffel
+- Projet réalisé dans le cadre de la SAE 201-203
+- Université Gustave Eiffel
 
 ## Licence
 Ce projet est sous licence MIT.

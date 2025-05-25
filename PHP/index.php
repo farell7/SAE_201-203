@@ -1,8 +1,6 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
 
 // Si l'utilisateur est déjà connecté, on renvoie la redirection appropriée
 if (isset($_SESSION['user'])) {
@@ -11,16 +9,16 @@ if (isset($_SESSION['user'])) {
     
     switch ($role) {
         case 'admin':
-            $redirect = 'HTML/admin.html';
+            $redirect = '../HTML/admin.html';
             break;
         case 'agent':
-            $redirect = 'HTML/agent.html';
+            $redirect = '../HTML/agent.html';
             break;
         case 'teacher':
-            $redirect = 'HTML/teacher.html';
+            $redirect = '../HTML/teacher.html';
             break;
         case 'student':
-            $redirect = 'HTML/student.html';
+            $redirect = '../HTML/student.html';
             break;
     }
     
@@ -35,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    require_once 'PHP/connexion.php';
+    require_once 'connexion.php';
     
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -64,16 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $redirect = '';
             switch ($user['role']) {
                 case 'admin':
-                    $redirect = 'HTML/admin.html';
+                    $redirect = '../HTML/admin.html';
                     break;
                 case 'agent':
-                    $redirect = 'HTML/agent.html';
+                    $redirect = '../HTML/agent.html';
                     break;
                 case 'teacher':
-                    $redirect = 'HTML/teacher.html';
+                    $redirect = '../HTML/teacher.html';
                     break;
                 case 'student':
-                    $redirect = 'HTML/student.html';
+                    $redirect = '../HTML/student.html';
                     break;
                 default:
                     echo json_encode(['error' => 'Rôle invalide']);

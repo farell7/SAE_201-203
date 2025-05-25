@@ -1,8 +1,10 @@
 <?php
 session_start();
-// Temporairement commenté pour permettre l'accès direct
-/*if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'admin') {
-    header('Location: ../index.php');
+header('Content-Type: application/json');
+
+// Vérification de la session et du rôle admin
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+    echo json_encode(['error' => 'Accès non autorisé']);
     exit();
 }*/
 
@@ -39,276 +41,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validation des Comptes - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Montserrat', Arial, sans-serif;
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
-
-        .sidebar {
-            background-color: #2f2a85;
-            min-height: 100vh;
-        }
-
-        .nav-link {
-            color: rgba(255, 255, 255, 0.9);
-            padding: 0.8rem 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
-        }
-
-        .nav-link i {
-            transition: transform 0.2s ease;
-        }
-
-        .nav-link:hover i {
-            transform: translateX(3px);
-        }
-
-        .card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: none;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 .5rem 1rem rgba(47, 42, 133, 0.15);
-        }
-
-        .table {
-            background-color: #ffffff;
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-
-        .table thead th {
-            background-color: #2f2a85;
-            color: #ffffff;
-            font-weight: 600;
-            border: none;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(47, 42, 133, 0.05);
-        }
-
-        .btn-approve {
-            background-color: #35c8b0;
-            color: #ffffff;
-        }
-
-        .btn-approve:hover {
-            background-color: #2ca892;
-            color: #ffffff;
-        }
-
-        .btn-reject {
-            background-color: #ca3120;
-            color: #ffffff;
-        }
-
-        .btn-reject:hover {
-            background-color: #a82718;
-            color: #ffffff;
-        }
-
-        .footer {
-            background-color: #2f2a85;
-            color: #ffffff;
-        }
-
-        .badge-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .badge-approved {
-            background-color: #35c8b0;
-            color: #fff;
-        }
-
-        .badge-rejected {
-            background-color: #ca3120;
-            color: #fff;
-        }
-    </style>
+    <title>Validation de comptes - Admin</title>
+    <link rel="stylesheet" href="../CSS/stylevalidation.css">
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0 position-fixed sidebar">
-                <div class="d-flex flex-column h-100">
-                    <h2 class="text-white text-center py-4 mb-4">Admin</h2>
-                    <nav class="nav flex-column">
-                        <a class="nav-link d-flex align-items-center" href="admin.php">
-                            <i class="bi bi-house-door me-2"></i>Accueil
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="dashboard_admin.php">
-                            <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
-                        </a>
-                        <a class="nav-link d-flex align-items-center active" href="validation_compte.php">
-                            <i class="bi bi-person-check me-2"></i>Validation des utilisateurs
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="gestion_utilisateurs.php">
-                            <i class="bi bi-people me-2"></i>Utilisateurs
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="suivi_admin.php">
-                            <i class="bi bi-graph-up me-2"></i>Suivi
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="gestion_objets_salles.php">
-                            <i class="bi bi-building me-2"></i>Objets & Salles
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="gestion_reservations.php">
-                            <i class="bi bi-calendar-check me-2"></i>Gestion des réservations
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="logout.php">
-                            <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
-                        </a>
-                    </nav>
-                </div>
+    <div class="container">
+        <h1>Comptes à Valider</h1>
+        <p>Voici la liste des comptes en attente de validation.</p>
+        <div class="controls">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Rechercher par nom, prénom, email...">
             </div>
-
-            <!-- Main content -->
-            <main class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
-                <div class="container">
-                    <h1 class="display-5 fw-bold mb-2">Validation des Comptes</h1>
-                    <p class="text-muted fs-4 mb-5">Gestion des demandes d'inscription</p>
-
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="row align-items-center mb-4">
-                                <div class="col-md-8">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0">
-                                            <i class="bi bi-search"></i>
-                                        </span>
-                                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Rechercher une demande...">
-                                    </div>
-                                </div>
-                                <div class="col-md-4 text-md-end">
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-outline-secondary">
-                                            <i class="bi bi-funnel me-2"></i>Filtrer
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary">
-                                            <i class="bi bi-sort-down me-2"></i>Trier
-                                        </button>
-                                    </div>
-                                </div>
+            
+            <div class="filter-group">
+                <select id="roleFilter">
+                    <option value="all">Tous les rôles</option>
+                    <option value="student">Étudiant</option>
+                    <option value="teacher">Enseignant</option>
+                    <option value="agent">Agent</option>
+                    <option value="admin">Admin</option>
+                </select>
+                
+                <select id="statusFilter">
+                    <option value="all">Tous les statuts</option>
+                    <option value="pending">En attente</option>
+                    <option value="validated">Validés</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="nom">Nom</th>
+                        <th class="sortable" data-sort="prenom">Prénom</th>
+                        <th class="sortable" data-sort="email">Email</th>
+                        <th class="sortable" data-sort="role">Rôle</th>
+                        <th class="sortable" data-sort="valide">Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($users as $user): ?>
+                    <tr data-id="<?= $user['id'] ?>" data-role="<?= htmlspecialchars($user['role']) ?>" data-status="<?= $user['valide'] ? 'validated' : 'pending' ?>">
+                        <td><?= htmlspecialchars($user['nom']) ?></td>
+                        <td><?= htmlspecialchars($user['prenom']) ?></td>
+                        <td><?= htmlspecialchars($user['email']) ?></td>
+                        <td>
+                            <span class="badge badge-<?= $user['role'] === 'admin' ? 'danger' : ($user['role'] === 'agent' ? 'primary' : 'secondary') ?>">
+                                <?= htmlspecialchars($user['role']) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <?php if ($user['valide']): ?>
+                                <span class="badge badge-success">Validé</span>
+                            <?php else: ?>
+                                <span class="badge badge-warning">En attente</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <?php if (!$user['valide']): ?>
+                                    <button class="btn-validate" onclick="openModal('validate', <?= $user['id'] ?>, '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['nom']) ?>')">Valider</button>
+                                    <button class="btn-reject" onclick="openModal('reject', <?= $user['id'] ?>, '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['nom']) ?>')">Rejeter</button>
+                                <?php else: ?>
+                                    <button class="btn-reject" onclick="openModal('reject', <?= $user['id'] ?>, '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['nom']) ?>')">Invalider</button>
+                                <?php endif; ?>
                             </div>
-
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Nom</th>
-                                            <th>Email</th>
-                                            <th>Type de compte</th>
-                                            <th>Date de demande</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Pierre Martin</td>
-                                            <td>pierre.martin@example.com</td>
-                                            <td>
-                                                <span class="badge bg-primary">Enseignant</span>
-                                            </td>
-                                            <td>2024-03-15</td>
-                                            <td>
-                                                <span class="badge badge-pending">En attente</span>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-approve btn-sm me-2">
-                                                    <i class="bi bi-check-lg me-1"></i>Approuver
-                                                </button>
-                                                <button class="btn btn-reject btn-sm">
-                                                    <i class="bi bi-x-lg me-1"></i>Rejeter
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Sophie Bernard</td>
-                                            <td>sophie.bernard@example.com</td>
-                                            <td>
-                                                <span class="badge bg-info">Étudiant</span>
-                                            </td>
-                                            <td>2024-03-14</td>
-                                            <td>
-                                                <span class="badge badge-approved">Approuvé</span>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                    <i class="bi bi-check-lg me-1"></i>Approuvé
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Lucas Dubois</td>
-                                            <td>lucas.dubois@example.com</td>
-                                            <td>
-                                                <span class="badge bg-info">Étudiant</span>
-                                            </td>
-                                            <td>2024-03-14</td>
-                                            <td>
-                                                <span class="badge badge-rejected">Rejeté</span>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                    <i class="bi bi-x-lg me-1"></i>Rejeté
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center mt-4">
-                                <div class="text-muted">
-                                    Affichage de <strong>1-3</strong> sur <strong>25</strong> demandes
-                                </div>
-                                <nav aria-label="Page navigation">
-                                    <ul class="pagination mb-0">
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                                        </li>
-                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">Suivant</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="noResults" class="text-center hidden">
+            <p>Aucun compte ne correspond aux critères de recherche.</p>
         </div>
     </div>
-
-    <footer class="footer fixed-bottom py-3">
-        <div class="container text-center">
-            <span>&copy; 2025 Université Eiffel. Tous droits réservés.</span>
+    
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Confirmation</h3>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Êtes-vous sûr de vouloir effectuer cette action ?
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" onclick="closeModal()">Annuler</button>
+                <form method="POST" id="actionForm">
+                    <input type="hidden" name="user_id" id="modalUserId">
+                    <input type="hidden" name="action" id="modalAction">
+                    <button type="submit" id="confirmButton">Confirmer</button>
+                </form>
+            </div>
         </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </div>
+    <script src="../JS/scriptvalidation.js"></script>
 </body>
 </html>

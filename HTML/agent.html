@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Agent - Université Eiffel</title>
+    <link rel="stylesheet" href="CSS/styleagent.css">
+</head>
+<body>
+    <nav>
+        <a href="#">Accueil</a>
+        <a href="#">Gestion des salles</a>
+        <a href="#">Gestion du matériel</a>
+        <a href="#">Réservations</a>
+        <a href="PHP/logout.php">Déconnexion</a>
+    </nav>
+
+    <div class="main-content">
+        <h1 id="welcomeMessage">Chargement...</h1>
+        <h2>Espace agent</h2>
+        <div class="course-cards">
+            <div class="course-card">
+                <img src="img/emplacement.png" alt="Gestion des salles">
+                <h3>Gestion des salles</h3>
+                <p>Gérez la disponibilité et l'état des salles.</p>
+            </div>
+            <div class="course-card">
+                <img src="img/cadenas-verrouille.png" alt="Gestion du matériel">
+                <h3>Gestion du matériel</h3>
+                <p>Gérez l'inventaire et l'état du matériel.</p>
+            </div>
+            <div class="course-card">
+                <img src="img/profil.png" alt="Réservations">
+                <h3>Réservations</h3>
+                <p>Consultez et gérez les réservations en cours.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy;2025 Université Eiffel. Tous droits réservés.</p>
+    </footer>
+
+    <script>
+        window.onload = function() {
+            fetch('PHP/agent.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        window.location.href = 'index.php?error=' + data.error;
+                    } else {
+                        document.getElementById('welcomeMessage').textContent = 'Bonjour, ' + data.username + ' !';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    window.location.href = 'index.php?error=server_error';
+                });
+        };
+    </script>
+</body>
+</html> 

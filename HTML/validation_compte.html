@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation des comptes - Université Eiffel</title>
+    <link rel="stylesheet" href="../CSS/styleadmin.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Validation des comptes utilisateurs</h1>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <div id="success-message" class="success" style="display: none;"></div>
+        
+        <div class="users-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- Les utilisateurs seront chargés ici dynamiquement -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour charger les utilisateurs
+        function loadUsers() {
+            fetch('../PHP/validation_compte.php?action=list')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                    } else {
+                        const tbody = document.getElementById('usersTableBody');
+                        tbody.innerHTML = '';
+                        
+                        data.users.forEach(user => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${user.nom}</td>
+                                <td>${user.prenom}</td>
+                                <td>${user.email}</td>
+                                <td>${user.role}</td>
+                                <td>
+                                    <button onclick="validateUser(${user.id})">Valider</button>
+                                    <button onclick="rejectUser(${user.id})">Rejeter</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                })
+                .catch(error => {
+                    showError('Erreur lors du chargement des utilisateurs');
+                });
+        }
+
+        // Fonction pour valider un utilisateur
+        function validateUser(userId) {
+            fetch('../PHP/validation_compte.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'validate',
+                    userId: userId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showSuccess('Utilisateur validé avec succès');
+                    loadUsers();
+                }
+            })
+            .catch(error => {
+                showError('Erreur lors de la validation');
+            });
+        }
+
+        // Fonction pour rejeter un utilisateur
+        function rejectUser(userId) {
+            fetch('../PHP/validation_compte.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'reject',
+                    userId: userId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showSuccess('Utilisateur rejeté avec succès');
+                    loadUsers();
+                }
+            })
+            .catch(error => {
+                showError('Erreur lors du rejet');
+            });
+        }
+
+        // Fonctions utilitaires pour afficher les messages
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
+        }
+
+        // Charger les utilisateurs au chargement de la page
+        window.onload = loadUsers;
+    </script>
+</body>
+</html> 

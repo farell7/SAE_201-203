@@ -103,3 +103,125 @@
     padding: 20px 0;
     text-align: center;
 }
+
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    background: rgb(242, 245, 250);
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    background: rgb(29, 37, 126);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 0;
+    min-height: 100vh;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.sidebar nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 15px 30px;
+    display: block;
+    transition: background 0.2s;
+    font-size: 1.1em;
+}
+
+.sidebar nav a:hover {
+    background: #3949ab;
+}
+
+.main-content {
+    flex: 1;
+    padding: 40px 60px;
+}
+
+.welcome {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #3949ab;
+    margin-bottom: 30px;
+}
+
+.admin-cards {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.admin-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(60,60,100,0.08);
+    padding: 30px 24px;
+    flex: 1 1 260px;
+    min-width: 260px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.admin-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(60,60,100,0.15);
+}
+
+.admin-card img {
+    width: 65px;
+    height: 65px;
+    margin-bottom: 18px;
+}
+
+.admin-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+    color: rgb(29, 37, 126);
+}
+
+.admin-card p {
+    color: #555;
+    text-align: center;
+    font-size: 1em;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    background: rgb(30, 38, 122);
+    color: #fff;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 0.95em;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 900px) {
+    .main-content {
+        padding: 20px 10px;
+    }
+    .admin-cards {
+        flex-direction: column;
+        gap: 18px;
+    }
+}
