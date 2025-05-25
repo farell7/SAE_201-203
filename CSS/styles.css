@@ -135,4 +135,123 @@ body {
     background-color: var(--nav-bg-color);
     color: white;
     margin-top: 4rem;
+}
+
+/* Page de connexion */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2A2D64 0%, #1a1c3f 100%);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.login-box {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.login-box .logo {
+    width: 150px;
+    margin-bottom: 1.5rem;
+}
+
+.login-box h1 {
+    color: #2A2D64;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #2A2D64;
+}
+
+.btn-login {
+    background: #2A2D64;
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-login:hover {
+    background: #3a3e8c;
+}
+
+.form-links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.form-links a {
+    color: #2A2D64;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.form-links a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    background: #ffe6e6;
+    color: #dc3545;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 1rem;
+    }
+
+    .login-box {
+        padding: 1.5rem;
+    }
+
+    .form-links {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
 } 

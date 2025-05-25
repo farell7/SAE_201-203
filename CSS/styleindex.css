@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
-#login-page *{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Montserrat', sans-serif;
 }
 
-body{
+body {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -18,19 +18,19 @@ body{
     height: 100vh;
 }
 
-@keyframes gradient{
-    0%{
+@keyframes gradient {
+    0% {
         background-position: 0% 50%;
     }
-    50%{
+    50% {
         background-position: 100% 50%;
     }
-    100%{
+    100% {
         background-position: 0% 50%;
     }
 }
 
-.container{
+.container {
     background-color: whitesmoke;
     border-radius: 30px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
@@ -41,33 +41,33 @@ body{
     max-width: 100%;
 }
 
-.container p{
+.container p {
     font-size: 14px;
     line-height: 20px;
     letter-spacing: 0.3px;
     margin: 20px 0;
 }
 
-.container span{
+.container span {
     font-size: 12px;
 }
 
-#login-page .container a{
+#login-page .container a {
     color: #333;
     font-size: 10px;
     text-decoration: none;
     margin: 15px 0 10px;
-    transition : all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
-#login-page .container a:hover{
-    color : #512da8;
+#login-page .container a:hover {
+    color: #512da8;
     font-size: 13px;
     text-decoration: underline;
-    transform : scale(1.05);
+    transform: scale(1.05);
 }
 
-#login-page .container button{
+#login-page .container button {
     background-color: #512da8;
     color: white;
     font-size: 15px;
@@ -82,12 +82,12 @@ body{
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
-#login-page .container button.hidden{
+#login-page .container button.hidden {
     background-color: transparent;
     border-color: whitesmoke;
 }
 
-.container form{
+.container form {
     background-color: whitesmoke;
     display: flex;
     align-items: center;
@@ -97,33 +97,151 @@ body{
     height: 100%;
 }
 
-#login-page .container input , #register-role{
-    border : 2px solid #e8e8e8;
-    padding : 12px;
-    margin-bottom : 10px;
+#login-page .container input, #register-role {
+    border: 2px solid #e8e8e8;
+    padding: 12px;
+    margin-bottom: 10px;
     border-radius: 10px;
-    background-color : lightgray;
+    background-color: lightgray;
     font-size: small;
-    font-weight :bold;
+    font-weight: bold;
     text-align: center;
-    width : 60%;
+    width: 60%;
 }
 
-#login-page .container input:focus , #register-role:focus{
-    outline-color : #512da8;
-    background-color : lightblue;
-    color : black;
+#login-page .container input:focus, #register-role:focus {
+    outline-color: #512da8;
+    background-color: lightblue;
+    color: black;
     box-shadow: 5px 5px rgba(0,0,0,0.3);
     transition: all 0.3s ease-in-out;
 }
 
-
 #register-role:focus {
-    outline-color : #512da8;
-    background-color : lightblue;
-    color : black;
-    box-shadow : 5px 5px rgba(0,0,0,0.3);
+    outline-color: #512da8;
+    background-color: lightblue;
+    color: black;
+    box-shadow: 5px 5px rgba(0,0,0,0.3);
     transition: all 0.3s ease-in-out;
+}
+
+#login-page .form-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: all 0.6s ease-in-out;
+}
+
+#login-page .sign-in {
+    left: 0;
+    width: 50%;
+    z-index: 2;
+}
+
+#login-page .container.active .sign-in {
+    transform: translateX(100%);
+}
+
+#login-page .sign-up {
+    left: 0;
+    width: 50%;
+    opacity: 0;
+    z-index: 1;
+}
+
+#login-page .container.active .sign-up {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    animation: move 0.6s;
+}
+
+@keyframes move {
+    0%, 49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+    50%, 100% {
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+#login-page .toggle-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 0.6s ease-in-out;
+    border-radius: 150px 0 0 100px;
+    z-index: 1000;
+}
+
+#login-page .container.active .toggle-container {
+    transform: translateX(-100%);
+    border-radius: 0 150px 100px 0;
+}
+
+#login-page .toggle {
+    background-color: #512da8;
+    height: 100%;
+    background: linear-gradient(to right, #5c6bc0, #512da8);
+    color: #fff;
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: all 0.6s ease-in-out;
+}
+
+#login-page .container.active .toggle {
+    transform: translateX(50%);
+}
+
+#login-page .toggle-panel {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 30px;
+    text-align: center;
+    top: 0;
+    transform: translateX(0);
+    transition: all 0.6s ease-in-out;
+}
+
+#login-page .toggle-left {
+    transform: translateX(-200%);
+}
+
+#login-page .container.active .toggle-left {
+    transform: translateX(0);
+}
+
+#login-page .toggle-right {
+    right: 0;
+    transform: translateX(0);
+}
+
+#login-page .container.active .toggle-right {
+    transform: translateX(200%);
+}
+
+select {
+    background-color: #eee;
+    border: none;
+    margin: 8px 0;
+    padding: 10px 15px;
+    font-size: 13px;
+    border-radius: 8px;
+    width: 100%;
+    outline: none;
 }
 
 #login-email{
@@ -181,48 +299,6 @@ body{
     background-size: 15px;
 }
 
-#login-page .form-container{
-    position: absolute;
-    top: 0;
-    height: 100%;
-    transition: all 0.6s ease-in-out;
-}
-
-#login-page .sign-in{
-    left: 0;
-    width: 50%;
-    z-index: 2;
-}
-
-#login-page .container.active .sign-in{
-    transform: translateX(100%);
-}
-
-#login-page .sign-up{
-    left: 0;
-    width: 50%;
-    opacity: 0;
-    z-index: 1;
-}
-
-#login-page .container.active .sign-up{
-    transform: translateX(100%);
-    opacity: 1;
-    z-index: 5;
-    animation: move 0.6s;
-}
-
-@keyframes move{
-    0%, 49.99%{
-        opacity: 0;
-        z-index: 1;
-    }
-    50%, 100%{
-        opacity: 1;
-        z-index: 5;
-    }
-}
-
 #login-page .social-icons{
     margin: 20px 0;
 }
@@ -236,72 +312,6 @@ body{
     margin: 0 3px;
     width: 40px;
     height: 40px;
-}
-
-#login-page .toggle-container{
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 50%;
-    height: 100%;
-    overflow: hidden;
-    transition: all 0.6s ease-in-out;
-    border-radius: 150px 0 0 100px;
-    z-index: 1000;
-}
-
-#login-page .container.active .toggle-container{
-    transform: translateX(-100%);
-    border-radius: 0 150px 100px 0;
-}
-
-#login-page .toggle{
-    background-color: #512da8;
-    height: 100%;
-    background: linear-gradient(to right, #5c6bc0, #512da8);
-    color: #fff;
-    position: relative;
-    left: -100%;
-    height: 100%;
-    width: 200%;
-    transform: translateX(0);
-    transition: all 0.6s ease-in-out;
-}
-
-#login-page .container.active .toggle{
-    transform: translateX(50%);
-}
-
-#login-page .toggle-panel{
-    position: absolute;
-    width: 50%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 0 30px;
-    text-align: center;
-    top: 0;
-    transform: translateX(0);
-    transition: all 0.6s ease-in-out;
-}
-
-#login-page .toggle-left{
-    transform: translateX(-200%);
-}
-
-#login-page .container.active .toggle-left{
-    transform: translateX(0);
-}
-
-#login-page .toggle-right{
-    right: 0;
-    transform: translateX(0);
-}
-
-#login-page .container.active .toggle-right{
-    transform: translateX(200%);
 }
 
 .register-title {

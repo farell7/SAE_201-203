@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Université Eiffel</title>
+    <link rel="stylesheet" href="../CSS/style.css">
+</head>
+<body>
+    <div class="register-container">
+        <h2>Inscription</h2>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="nom">Nom :</label>
+                <input type="text" id="nom" name="nom" required>
+            </div>
+            <div class="form-group">
+                <label for="prenom">Prénom :</label>
+                <input type="text" id="prenom" name="prenom" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email :</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe :</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirmer le mot de passe :</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Rôle :</label>
+                <select id="role" name="role" required>
+                    <option value="">Sélectionnez un rôle</option>
+                    <option value="student">Étudiant</option>
+                    <option value="teacher">Enseignant</option>
+                    <option value="agent">Agent</option>
+                </select>
+            </div>
+            <button type="submit">S'inscrire</button>
+            <div class="links">
+                <a href="index.html">Déjà inscrit ? Se connecter</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            if (formData.get('password') !== formData.get('confirm_password')) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = 'Les mots de passe ne correspondent pas';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            fetch('../PHP/register.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                } else if (data.success) {
+                    window.location.href = 'index.html?message=' + encodeURIComponent(data.success);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                document.getElementById('error-message').textContent = 'Une erreur est survenue';
+                document.getElementById('error-message').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html> 

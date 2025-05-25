@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS utilisateur (
     prenom VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    pseudo VARCHAR(50) NOT NULL,
+    code_postal VARCHAR(5) NOT NULL,
+    date_naissance DATE NOT NULL,
     role ENUM('student', 'teacher', 'agent', 'admin') NOT NULL DEFAULT 'student',
     valide BOOLEAN DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

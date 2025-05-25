@@ -398,3 +398,43 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de configuration PHP
+PHP/connexion.php
+
+# Dossiers de téléchargement et médias
+uploads/
+img/uploads/
+
+# Fichiers de log
+*.log
+error_log
+access_log
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*~
+
+# Fichiers de dépendances
+/vendor/
+/node_modules/
+
+# Fichiers de configuration sensibles
+.env
+config.php
+
+# Fichiers de cache
+/cache/
+*.cache
