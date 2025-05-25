@@ -1,37 +1,45 @@
 <?php
 session_start();
 
-function checkSession($required_role = null) {
-    // Vérifier si l'utilisateur est connecté
-    if (!isset($_SESSION['utilisateur'])) {
-        header('Location: ../index.php');
-        exit();
-    }
+// Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['utilisateur'])) {
+    header('Location: ../index.php');
+    exit();
+}
 
-    // Si un rôle spécifique est requis, le vérifier
-    if ($required_role !== null) {
-        if ($_SESSION['utilisateur']['role'] !== $required_role) {
-            // Rediriger vers la page appropriée selon le rôle
-            switch($_SESSION['utilisateur']['role']) {
-                case 'admin':
-                    header('Location: admin.php');
-                    break;
-                case 'teacher':
-                    header('Location: teacher.php');
-                    break;
-                case 'agent':
-                    header('Location: agent.php');
-                    break;
-                case 'student':
-                    header('Location: student.php');
-                    break;
-                default:
-                    header('Location: ../index.php');
-            }
+// Récupérer le rôle de l'utilisateur
+$role = $_SESSION['utilisateur']['role'];
+
+// Vérifier le rôle selon la page
+$current_page = basename($_SERVER['PHP_SELF'], '.php');
+
+// Vérifier les autorisations
+switch($current_page) {
+    case 'admin':
+        if ($role !== 'admin') {
+            header('Location: ../index.php');
             exit();
         }
-    }
-
-    return $_SESSION['utilisateur'];
+        break;
+    case 'teacher':
+        if ($role !== 'teacher') {
+            header('Location: ../index.php');
+            exit();
+        }
+        break;
+    case 'agent':
+        if ($role !== 'agent') {
+            header('Location: ../index.php');
+            exit();
+        }
+        break;
+    case 'student':
+        if ($role !== 'student') {
+            header('Location: ../index.php');
+            exit();
+        }
+        break;
 }
+
+$user = $_SESSION['utilisateur'];
 ?> 
