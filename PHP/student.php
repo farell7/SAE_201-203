@@ -146,16 +146,16 @@ if ($user['role'] !== 'student') {
         <h1>Bonjour, <?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?> !</h1>
         <h2>Espace Étudiant</h2>
         <div class="course-cards">
-            <div class="course-card">
+            <a href="reservation_salle.php" class="course-card" style="text-decoration:none;color:inherit;">
                 <img src="../img/emplacement.png" alt="Réserver une salle">
                 <h3>Réserver une Salle</h3>
                 <p>Réservez une salle pour vos travaux de groupe ou études personnelles.</p>
-            </div>
-            <div class="course-card">
+            </a>
+            <a href="reservation_materiel.php" class="course-card" style="text-decoration:none;color:inherit;">
                 <img src="../img/cadenas-verrouille.png" alt="Réserver du matériel">
                 <h3>Réserver du Matériel</h3>
                 <p>Empruntez le matériel nécessaire pour vos projets et présentations.</p>
-            </div>
+            </a>
             <div class="course-card">
                 <img src="../img/nom.png" alt="Mes réservations">
                 <h3>Mes Réservations</h3>

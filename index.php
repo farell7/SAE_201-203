@@ -2,13 +2,13 @@
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_POST['password'])) {
-    require_once 'PHP/config.php';
+    require_once 'PHP/connexion.php';
     
     $email = $_POST['email'];
     $password = $_POST['password'];
     
     try {
-        $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email = ?");
+        $stmt = $connexion->prepare("SELECT * FROM utilisateur WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -35,17 +35,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_P
                     header('Location: PHP/student.php');
                     break;
                 default:
-                    $_SESSION['error'] = 'invalid_role';
+                    $_SESSION['error'] = 'Rôle utilisateur invalide';
                     header('Location: index.php');
             }
             exit();
         } else {
-            $_SESSION['error'] = 'invalid_credentials';
+            $_SESSION['error'] = 'Email ou mot de passe incorrect';
             header('Location: index.php');
             exit();
         }
     } catch(PDOException $e) {
-        $_SESSION['error'] = 'database_error';
+        $_SESSION['error'] = 'Erreur de connexion à la base de données';
         header('Location: index.php');
         exit();
     }
@@ -91,16 +91,18 @@ unset($_SESSION['error']);
         <div class="form-container sign-up">
             <div class="register-title"><h1>Créer un compte</h1></div>
             <form action="PHP/register.php" method="POST">
-                <input type="text" name="nom" placeholder="Nom" id="register-name" required> 
-                <input type="text" name="prenom" placeholder="Prénom" id="register-firstname" required>
-                <input type="email" name="email" placeholder="Email" id="register-email" required>
-                <input type="password" name="password" placeholder="Mot de passe" id="register-password" required>
-                <input type="text" name="pseudo" placeholder="Pseudo" id="register-pseudo" required>
-                <input type="text" name="postal" placeholder="Code Postal" id="register-postal" pattern="^\d{5}$" title="Entrez un code postal Français à 5chiffres" required>
-                <input type="date" name="birthdate" placeholder="Date de naissance" id="register-birthdate" required>
-                <select name="role" id="register-role" required>
+                <input type="text" name="nom" placeholder="Nom" required> 
+                <input type="text" name="prenom" placeholder="Prénom" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Mot de passe" required>
+                <input type="text" name="pseudo" placeholder="Pseudo" required>
+                <input type="text" name="postal" placeholder="Code Postal" pattern="^\d{5}$" title="Entrez un code postal Français à 5 chiffres" required>
+                <input type="date" name="birthdate" placeholder="Date de naissance" required>
+                <select name="role" required>
                     <option value="student">Etudiant</option>
                     <option value="teacher">Enseignant</option>
+                    <option value="agent">Agent</option>
+                    <option value="admin">Administrateur</option>
                 </select>
                 <button type="submit">S'inscrire</button>
             </form>
@@ -108,24 +110,18 @@ unset($_SESSION['error']);
         <div class="form-container sign-in">
             <form action="index.php" method="POST">
                 <h1>Se connecter</h1>
-                <?php if ($error): ?>
+                <?php if (isset($_SESSION['error'])): ?>
                     <div class="error-message">
-                        <?php
-                        switch($error) {
-                            case 'invalid_credentials':
-                                echo "<p style='color: red;'>Email ou mot de passe incorrect</p>";
-                                break;
-                            case 'database_error':
-                                echo "<p style='color: red;'>Erreur de connexion à la base de données</p>";
-                                break;
-                            case 'invalid_role':
-                                echo "<p style='color: red;'>Erreur de rôle utilisateur</p>";
-                                break;
-                            default:
-                                echo "<p style='color: red;'>Une erreur est survenue</p>";
-                        }
-                        ?>
+                        <p style='color: red;'><?php echo $_SESSION['error']; ?></p>
                     </div>
+                    <?php unset($_SESSION['error']); ?>
+                <?php endif; ?>
+                
+                <?php if (isset($_SESSION['success'])): ?>
+                    <div class="success-message">
+                        <p style='color: green;'><?php echo $_SESSION['success']; ?></p>
+                    </div>
+                    <?php unset($_SESSION['success']); ?>
                 <?php endif; ?>
                 <input type="email" name="email" placeholder="Email" id="login-email" required>
                 <input type="password" name="password" placeholder="Mot de passe" id="login-password" required>

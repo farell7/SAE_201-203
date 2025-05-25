@@ -27,7 +27,7 @@ try {
         }
 
         // Stockage des informations de session
-        $_SESSION['user'] = [
+        $_SESSION['utilisateur'] = [
             'id' => $user['id'],
             'email' => $user['email'],
             'nom' => $user['nom'],
@@ -39,16 +39,16 @@ try {
         $redirect = '';
         switch ($user['role']) {
             case 'admin':
-                $redirect = 'admin.html';
+                $redirect = 'admin.php';
                 break;
             case 'teacher':
-                $redirect = 'teacher.html';
+                $redirect = 'teacher.php';
                 break;
             case 'student':
-                $redirect = 'student.html';
+                $redirect = 'student.php';
                 break;
             case 'agent':
-                $redirect = 'agent.html';
+                $redirect = 'agent.php';
                 break;
             default:
                 echo json_encode(['error' => 'Rôle non reconnu']);

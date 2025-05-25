@@ -1,13 +1,31 @@
 <?php
-session_start();
-$username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Administrateur';
+require_once 'check_session.php';
+require_once 'connexion.php';
+
+// Récupérer la liste des réservations avec les informations des utilisateurs et des salles
+$query = "SELECT r.*, u.nom as user_nom, u.prenom as user_prenom, s.nom as salle_nom 
+          FROM reservation r 
+          LEFT JOIN utilisateur u ON r.utilisateur_id = u.id 
+          LEFT JOIN salle s ON r.salle_id = s.id 
+          ORDER BY r.date_debut DESC";
+$stmt = $connexion->query($query);
+$reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer la liste des salles pour le formulaire
+$stmt = $connexion->query("SELECT * FROM salle ORDER BY nom");
+$salles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer la liste des utilisateurs pour le formulaire
+$stmt = $connexion->query("SELECT * FROM utilisateur ORDER BY nom, prenom");
+$utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Réservations - Admin</title>
+    <title>Gestion des Réservations - ResaUGE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -154,6 +172,9 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
         .active .reservation-count {
             color: rgba(255, 255, 255, 0.8);
         }
+
+        .container { padding: 20px; }
+        .add-button { margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -269,43 +290,36 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                <?php foreach ($reservations as $reservation): ?>
                                                 <tr>
-                                                    <td>Salle A101</td>
-                                                    <td>Pierre Martin</td>
-                                                    <td>15/03/2024</td>
-                                                    <td>14:00 - 16:00</td>
+                                                    <td><?php echo htmlspecialchars($reservation['salle_nom']); ?></td>
+                                                    <td><?php echo htmlspecialchars($reservation['user_prenom'] . ' ' . $reservation['user_nom']); ?></td>
+                                                    <td><?php echo htmlspecialchars($reservation['date_debut']); ?></td>
+                                                    <td><?php echo htmlspecialchars($reservation['date_fin']); ?></td>
                                                     <td>
-                                                        <span class="badge badge-confirmed">Confirmée</span>
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-outline-secondary me-2">
-                                                            <i class="bi bi-eye"></i>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-outline-danger">
-                                                            <i class="bi bi-x-lg"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Amphi B</td>
-                                                    <td>Sophie Bernard</td>
-                                                    <td>15/03/2024</td>
-                                                    <td>09:00 - 12:00</td>
-                                                    <td>
+                                                        <?php if ($reservation['statut'] == 'en_attente'): ?>
                                                         <span class="badge badge-pending">En attente</span>
+                                                        <?php elseif ($reservation['statut'] == 'approuve'): ?>
+                                                        <span class="badge badge-confirmed">Confirmée</span>
+                                                        <?php else: ?>
+                                                        <span class="badge badge-cancelled">Refusée</span>
+                                                        <?php endif; ?>
                                                     </td>
                                                     <td>
                                                         <button class="btn btn-sm btn-outline-secondary me-2">
                                                             <i class="bi bi-eye"></i>
                                                         </button>
+                                                        <?php if ($reservation['statut'] == 'en_attente'): ?>
                                                         <button class="btn btn-sm btn-outline-success me-2">
                                                             <i class="bi bi-check-lg"></i>
                                                         </button>
                                                         <button class="btn btn-sm btn-outline-danger">
                                                             <i class="bi bi-x-lg"></i>
                                                         </button>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
+                                                <?php endforeach; ?>
                                             </tbody>
                                         </table>
                                     </div>
@@ -380,6 +394,10 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
                             </div>
                         </div>
                     </div>
+
+                    <button class="btn btn-primary add-button" data-bs-toggle="modal" data-bs-target="#addReservationModal">
+                        <i class="bi bi-plus-circle"></i> Ajouter une réservation
+                    </button>
                 </div>
             </main>
         </div>
@@ -391,6 +409,86 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
         </div>
     </footer>
 
+    <!-- Modal Ajout Réservation -->
+    <div class="modal fade" id="addReservationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter une réservation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addReservationForm" action="add_reservation.php" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Utilisateur</label>
+                            <select class="form-control" name="utilisateur_id" required>
+                                <?php foreach ($utilisateurs as $utilisateur): ?>
+                                <option value="<?php echo $utilisateur['id']; ?>">
+                                    <?php echo htmlspecialchars($utilisateur['prenom'] . ' ' . $utilisateur['nom']); ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Salle</label>
+                            <select class="form-control" name="salle_id" required>
+                                <?php foreach ($salles as $salle): ?>
+                                <option value="<?php echo $salle['id']; ?>">
+                                    <?php echo htmlspecialchars($salle['nom']); ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date et heure de début</label>
+                            <input type="datetime-local" class="form-control" name="date_debut" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date et heure de fin</label>
+                            <input type="datetime-local" class="form-control" name="date_fin" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Statut</label>
+                            <select class="form-control" name="statut" required>
+                                <option value="en_attente">En attente</option>
+                                <option value="approuve">Approuvé</option>
+                                <option value="refuse">Refusé</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" form="addReservationForm" class="btn btn-primary">Ajouter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editReservation(id) {
+            // À implémenter
+            alert('Modification de la réservation ' + id);
+        }
+
+        function deleteReservation(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) {
+                window.location.href = 'delete_reservation.php?id=' + id;
+            }
+        }
+
+        function approveReservation(id) {
+            if (confirm('Voulez-vous approuver cette réservation ?')) {
+                window.location.href = 'update_reservation_status.php?id=' + id + '&status=approuve';
+            }
+        }
+
+        function rejectReservation(id) {
+            if (confirm('Voulez-vous refuser cette réservation ?')) {
+                window.location.href = 'update_reservation_status.php?id=' + id + '&status=refuse';
+            }
+        }
+    </script>
 </body>
 </html> 

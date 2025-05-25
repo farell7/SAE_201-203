@@ -31,6 +31,7 @@ body {
 /* Navigation */
 .nav-container {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
     background-color: var(--nav-bg-color);
@@ -38,20 +39,15 @@ body {
     position: sticky;
     top: 0;
     z-index: 1000;
-    width: 100%;
 }
 
 .logo {
     height: 40px;
-    width: auto;
-    margin-right: 2rem;
 }
 
 .nav-menu {
     display: flex;
     gap: 2rem;
-    align-items: center;
-    margin-right: auto;
 }
 
 .nav-menu a {
@@ -63,11 +59,8 @@ body {
     transition: background-color 0.3s;
 }
 
-.nav-menu a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
 .nav-menu a.active {
+    color: white;
     background-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -75,7 +68,6 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-left: auto;
 }
 
 .profile-icon {

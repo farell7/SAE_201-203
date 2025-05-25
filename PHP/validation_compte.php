@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 // Vérification de la session et du rôle admin
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'admin') {
     echo json_encode(['error' => 'Accès non autorisé']);
     exit();
 }

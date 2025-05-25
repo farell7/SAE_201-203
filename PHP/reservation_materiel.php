@@ -1,100 +1,25 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+require_once 'connexion.php';
 
 // Vérification de la session
-if (!isset($_SESSION['user'])) {
-    echo json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
+if (!isset($_SESSION['utilisateur'])) {
+    header('Location: ../index.php');
     exit();
 }
 
-require_once 'connexion.php';
+// Messages de retour pour l'utilisateur
+$message = '';
+$messageType = '';
 
-// Traitement des requêtes GET
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (isset($_GET['action'])) {
-        switch ($_GET['action']) {
-            case 'list_materiel':
-                try {
-                    $sql = "SELECT * FROM materiel WHERE disponible = 1";
-                    $params = [];
-
-                    if (isset($_GET['type']) && !empty($_GET['type'])) {
-                        $sql .= " AND type = ?";
-                        $params[] = $_GET['type'];
-                    }
-
-                    if (isset($_GET['etat']) && !empty($_GET['etat'])) {
-                        $sql .= " AND etat = ?";
-                        $params[] = $_GET['etat'];
-                    }
-
-                    $sql .= " ORDER BY nom";
-                    $stmt = $connexion->prepare($sql);
-                    $stmt->execute($params);
-                    $materiel = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    echo json_encode(['materiel' => $materiel]);
-                    exit();
-                } catch (PDOException $e) {
-                    echo json_encode(['error' => 'Erreur lors de la récupération du matériel']);
-                    exit();
-                }
-                break;
-
-            case 'list_reservations':
-                try {
-                    $stmt = $connexion->prepare("
-                        SELECT r.*, m.nom as materiel_nom, m.type as materiel_type
-                        FROM reservation_materiel r 
-                        JOIN materiel m ON r.materiel_id = m.id 
-                        WHERE r.user_id = ?
-                        ORDER BY r.created_at DESC
-                    ");
-                    $stmt->execute([$_SESSION['user']['id']]);
-                    $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    echo json_encode(['reservations' => $reservations]);
-                    exit();
-                } catch (PDOException $e) {
-                    echo json_encode(['error' => 'Erreur lors de la récupération des réservations']);
-                    exit();
-                }
-                break;
-
-            default:
-                echo json_encode(['error' => 'Action non valide']);
-                exit();
-        }
-    }
-}
-
-// Traitement des requêtes POST
+// Traitement des actions POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action']) && $_POST['action'] === 'reserver') {
+    if (isset($_POST['reserver'])) {
         try {
-            if (!isset($_POST['materiel_id']) || !isset($_POST['date_debut']) || !isset($_POST['date_fin'])) {
-                throw new Exception('Données manquantes');
-            }
-
             $materiel_id = (int)$_POST['materiel_id'];
             $date_debut = $_POST['date_debut'];
             $date_fin = $_POST['date_fin'];
-            $user_id = $_SESSION['user']['id'];
-
-            // Vérifier si le matériel est disponible pour cette période
-            $stmt = $connexion->prepare("
-                SELECT COUNT(*) FROM reservation_materiel 
-                WHERE materiel_id = ? 
-                AND ((date_debut BETWEEN ? AND ?) 
-                OR (date_fin BETWEEN ? AND ?))
-                AND statut = 'validee'
-            ");
-            $stmt->execute([$materiel_id, $date_debut, $date_fin, $date_debut, $date_fin]);
-            
-            if ($stmt->fetchColumn() > 0) {
-                throw new Exception('Ce matériel n\'est pas disponible pour cette période');
-            }
+            $user_id = $_SESSION['utilisateur']['id'];
 
             // Créer la réservation
             $stmt = $connexion->prepare("
@@ -103,14 +28,155 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ");
             $stmt->execute([$materiel_id, $user_id, $date_debut, $date_fin]);
 
-            echo json_encode(['success' => 'Votre demande de réservation a été enregistrée et est en attente de validation']);
-            exit();
+            $message = "Votre demande de réservation a été enregistrée et est en attente de validation";
+            $messageType = "success";
         } catch (Exception $e) {
-            echo json_encode(['error' => $e->getMessage()]);
-            exit();
+            $message = "Erreur : " . $e->getMessage();
+            $messageType = "error";
         }
     }
 }
 
-echo json_encode(['error' => 'Méthode non autorisée']);
-?> 
+// Récupérer la liste du matériel
+$materiels = $connexion->query("SELECT * FROM materiel ORDER BY nom")->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer les réservations de l'utilisateur
+$stmt = $connexion->prepare("
+    SELECT r.*, m.nom as materiel_nom, m.type as materiel_type
+    FROM reservation_materiel r 
+    JOIN materiel m ON r.materiel_id = m.id 
+    WHERE r.user_id = ?
+    ORDER BY r.created_at DESC
+");
+$stmt->execute([$_SESSION['utilisateur']['id']]);
+$reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservation de Matériel - ResaUGE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/gestion_salle.css">
+</head>
+<body>
+    <nav class="nav-container">
+        <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
+        <div class="nav-menu">
+            <a href="#">Accueil</a>
+            <a href="#" class="active">Réservations</a>
+            <a href="#">Mon Compte</a>
+        </div>
+        <div class="profile-menu">
+            <img src="../img/profil.png" alt="Profile" class="profile-icon">
+            <div class="menu-icon">☰</div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <h1>Réservation de Matériel</h1>
+
+        <?php if ($message): ?>
+            <div class="alert alert-<?php echo $messageType; ?>">
+                <?php echo $message; ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Formulaire de réservation -->
+        <div class="form-container">
+            <h2>Nouvelle réservation</h2>
+            <form method="POST" class="form-gestion">
+                <select name="materiel_id" required>
+                    <option value="">Sélectionnez un matériel</option>
+                    <?php foreach ($materiels as $materiel): ?>
+                        <option value="<?php echo $materiel['id']; ?>">
+                            <?php echo htmlspecialchars($materiel['nom']); ?> 
+                            (<?php echo htmlspecialchars($materiel['type']); ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <div class="form-group">
+                    <label>Date de début</label>
+                    <input type="datetime-local" name="date_debut" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Date de fin</label>
+                    <input type="datetime-local" name="date_fin" required>
+                </div>
+
+                <button type="submit" name="reserver" class="btn btn-reserver">Réserver</button>
+            </form>
+        </div>
+
+        <!-- Liste des réservations -->
+        <div class="table-container">
+            <h2>Mes réservations</h2>
+            <table class="gestion-table">
+                <thead>
+                    <tr>
+                        <th>Matériel</th>
+                        <th>Type</th>
+                        <th>Date début</th>
+                        <th>Date fin</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($reservations as $reservation): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($reservation['materiel_nom']); ?></td>
+                        <td><?php echo htmlspecialchars($reservation['materiel_type']); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
+                        <td>
+                            <span class="badge <?php echo $reservation['statut'] === 'validee' ? 'bg-success' : 
+                                ($reservation['statut'] === 'en_attente' ? 'bg-warning' : 'bg-danger'); ?>">
+                                <?php echo htmlspecialchars($reservation['statut']); ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy;2025 Université Eiffel. Tous droits réservés.
+    </footer>
+
+    <script>
+    // Définir la date minimale pour les champs datetime-local
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        
+        document.querySelector('input[name="date_debut"]').min = minDateTime;
+        document.querySelector('input[name="date_fin"]').min = minDateTime;
+    });
+
+    // Validation des dates
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const dateDebut = new Date(document.querySelector('input[name="date_debut"]').value);
+        const dateFin = new Date(document.querySelector('input[name="date_fin"]').value);
+        
+        if (dateFin <= dateDebut) {
+            e.preventDefault();
+            alert('La date de fin doit être postérieure à la date de début');
+        }
+    });
+    </script>
+</body>
+</html> 

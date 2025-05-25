@@ -1,6 +1,8 @@
 <?php
 require_once 'check_session.php';
 // Le fichier check_session.php s'occupe déjà de toutes les vérifications
+
+$user = $_SESSION['utilisateur'];
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -118,14 +120,14 @@ require_once 'check_session.php';
     <div class="sidebar">
         <h2>Administration</h2>
         <nav class="nav flex-column">
-            <a class="nav-link" href="#"><i class="bi bi-house-door"></i>Accueil</a>
+            <a class="nav-link" href="admin.php"><i class="bi bi-house-door"></i>Accueil</a>
             <a class="nav-link" href="dashboard_admin.php"><i class="bi bi-speedometer2"></i>Tableau de bord</a>
             <a class="nav-link" href="validation_compte.php"><i class="bi bi-person-check"></i>Validation des utilisateurs</a>
             <a class="nav-link" href="gestion_utilisateurs.php"><i class="bi bi-people"></i>Gestion des utilisateurs</a>
             <a class="nav-link" href="suivi_admin.php"><i class="bi bi-graph-up"></i>Suivi</a>
             <a class="nav-link" href="gestion_materiel.php"><i class="bi bi-tools"></i>Gestion du matériel</a>
             <a class="nav-link" href="gestion_salle.php"><i class="bi bi-building"></i>Gestion des salles</a>
-            <a class="nav-link" href="gestion_reservations.php"><i class="bi bi-calendar-check"></i>Gestion des réservations</a>
+            <a class="nav-link" href="suivi_reservations.php"><i class="bi bi-calendar-check"></i>Suivi des réservations</a>
             <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i>Déconnexion</a>
         </nav>
     </div>
@@ -164,7 +166,7 @@ require_once 'check_session.php';
                         <div class="card-body text-center">
                             <h5 class="card-title">Gestion des utilisateurs</h5>
                             <p class="card-text">Gérez les comptes utilisateurs et leurs droits.</p>
-                            <a href="gestion_utilisateurs.php" class="btn btn-custom w-100">Gérer</a>
+                            <a href="validation_compte.php" class="btn btn-custom w-100">Gérer</a>
                         </div>
                     </div>
                 </div>
@@ -175,7 +177,7 @@ require_once 'check_session.php';
                         <div class="card-body text-center">
                             <h5 class="card-title">Suivi des réservations</h5>
                             <p class="card-text">Consultez et gérez les réservations en cours.</p>
-                            <a href="gestion_reservations.php" class="btn btn-custom w-100">Gérer</a>
+                            <a href="suivi_reservations.php" class="btn btn-custom w-100">Gérer</a>
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 // Vérification de la session
-if (!isset($_SESSION['user'])) {
+if (!isset($_SESSION['utilisateur'])) {
     echo json_encode(['error' => 'Vous devez être connecté pour accéder à cette page']);
     exit();
 }

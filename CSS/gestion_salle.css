@@ -8,7 +8,7 @@
     --text-color: #333;
     --border-color: #ddd;
     --background-color: #f8f9fa;
-    --nav-bg-color: #1e267a; /* Nouvelle couleur bleue pour la navbar */
+    --nav-bg-color: #1e267a;
 }
 
 * {
@@ -22,6 +22,10 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
 }
 
 /* Navigation */
@@ -84,6 +88,7 @@ body {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 0 1rem;
+    flex: 1;
 }
 
 h1 {
@@ -100,9 +105,10 @@ h2 {
 
 /* Alertes */
 .alert {
-    padding: 1rem;
+    padding: 12px 20px;
+    margin-bottom: 20px;
     border-radius: 4px;
-    margin-bottom: 1rem;
+    font-weight: 500;
 }
 
 .alert-success {
@@ -135,12 +141,18 @@ h2 {
 input[type="text"],
 input[type="number"],
 input[type="datetime-local"],
+select,
 textarea {
     padding: 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 1rem;
     width: 100%;
+}
+
+select {
+    background-color: white;
+    cursor: pointer;
 }
 
 textarea {
@@ -150,12 +162,14 @@ textarea {
 
 /* Boutons */
 .btn {
-    padding: 0.75rem 1.5rem;
+    display: inline-block;
+    padding: 10px 20px;
     border: none;
     border-radius: 4px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.2s;
 }
 
 .btn-ajouter {
@@ -179,54 +193,50 @@ textarea {
 }
 
 .btn-reserver {
-    background-color: var(--secondary-color);
+    background-color: #1a73e8;
     color: white;
+    width: 100%;
+}
+
+.btn-reserver:hover {
+    background-color: #1557b0;
 }
 
 /* Tableaux */
 .table-container {
-    background-color: white;
-    padding: 2rem;
+    margin: 20px;
+    background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
-    width: 100%;
+    overflow: hidden;
+}
+
+.table-container h2 {
+    padding: 20px;
+    margin: 0;
+    border-bottom: 1px solid #eee;
 }
 
 .gestion-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 1rem;
 }
 
 .gestion-table th,
 .gestion-table td {
-    padding: 1rem;
+    padding: 12px 20px;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #eee;
 }
 
 .gestion-table th {
-    background-color: var(--nav-bg-color);
-    color: white;
+    background: #f8f9fa;
     font-weight: 600;
+    color: #333;
 }
 
 .gestion-table tr:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-}
-
-/* Actions dans le tableau */
-.actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-/* Masquer la colonne photo dans le tableau */
-.gestion-table th:first-child,
-.gestion-table td:first-child {
-    display: none;
+    background: #f8f9fa;
 }
 
 /* Cases à cocher personnalisées */
@@ -282,9 +292,19 @@ textarea {
     transform: rotate(45deg);
 }
 
+/* Actions dans le tableau */
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .commentaire-input {
-    min-height: 60px;
-    margin-bottom: 0.5rem;
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
 }
 
 /* Modal */
@@ -301,10 +321,10 @@ textarea {
 
 .modal-content {
     position: relative;
-    background-color: white;
+    background-color: #fff;
     margin: 10% auto;
-    padding: 2rem;
-    width: 90%;
+    padding: 20px;
+    width: 80%;
     max-width: 500px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -312,20 +332,46 @@ textarea {
 
 .close {
     position: absolute;
-    right: 1rem;
-    top: 1rem;
-    font-size: 1.5rem;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #666;
     cursor: pointer;
 }
 
+.close:hover {
+    color: #333;
+}
+
+/* Styles pour le formulaire */
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 8px;
     font-weight: 500;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
 }
 
 /* Footer */
@@ -335,7 +381,66 @@ textarea {
     background-color: var(--nav-bg-color);
     color: white;
     border-top: 1px solid var(--border-color);
-    margin-top: 4rem;
+    margin-top: auto;
+    width: 100%;
+}
+
+/* État du matériel */
+.etat-bon {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.etat-moyen {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.etat-mauvais {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+/* Gestion des photos */
+.materiel-photo {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.no-photo {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    color: #999;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.file-input {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 4px;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.photo-preview {
+    margin-top: 1rem;
+}
+
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
 }
 
 /* Responsive */
@@ -366,3 +471,331 @@ textarea {
         width: 95%;
     }
 }
+
+.signature-container {
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.signature-pad {
+    background-color: white;
+    border-radius: 4px;
+    cursor: crosshair;
+}
+
+.signature-image {
+    max-width: 300px;
+    max-height: 150px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.validation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.validation-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.signature-section {
+    width: 150px;
+}
+
+.commentaire-section {
+    flex: 1;
+}
+
+.buttons-section {
+    display: flex;
+    gap: 8px;
+}
+
+.signature-input,
+.commentaire-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Ajustement des largeurs des colonnes */
+.gestion-table th:nth-child(1) { width: 10%; } /* Matériel */
+.gestion-table th:nth-child(2) { width: 8%; } /* Type */
+.gestion-table th:nth-child(3) { width: 10%; } /* Date début */
+.gestion-table th:nth-child(4) { width: 10%; } /* Date fin */
+.gestion-table th:nth-child(5) { width: 8%; }  /* Statut */
+.gestion-table th:nth-child(6) { width: 20%; } /* Actions */
+.gestion-table th:nth-child(7) { width: 8%; } /* Signature */
+.gestion-table th:nth-child(8) { width: 10%; } /* Commentaire */
+
+.gestion-table td {
+    padding: 8px !important;
+}
+
+.gestion-table input[type="text"] {
+    width: 120px !important;
+    height: 30px !important;
+    padding: 2px 5px !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+}
+
+.reservations-list {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.compact-table {
+    font-size: 13px;
+    width: 100%;
+}
+
+.compact-table th,
+.compact-table td {
+    padding: 8px 16px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.compact-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.small-input {
+    width: 100%;
+    max-width: 200px;
+    padding: 4px 8px;
+    height: 28px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 12px;
+    height: 28px;
+    min-width: 60px;
+}
+
+/* Ajustement des largeurs des colonnes */
+.compact-table th:nth-child(1) { width: 12.5%; } /* Date début */
+.compact-table th:nth-child(2) { width: 12.5%; } /* Date fin */
+.compact-table th:nth-child(3) { width: 12.5%; } /* Statut */
+.compact-table th:nth-child(4) { width: 25%; }   /* Actions */
+.compact-table th:nth-child(5) { width: 12.5%; } /* Signature */
+.compact-table th:nth-child(6) { width: 12.5%; } /* Commentaire */
+
+.gestion-table td {
+    padding: 8px !important;
+    vertical-align: top;
+}
+
+.gestion-table input[type="text"] {
+    width: 120px !important;
+    height: 30px !important;
+    padding: 2px 5px !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+}
+
+/* Styles existants */
+
+.form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-stack .small-input {
+    width: 100%;
+    max-width: 200px;
+}
+
+.form-stack .btn-group {
+    margin-top: 4px;
+}
+
+.action-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-column {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 0;
+}
+
+.input-row {
+    margin: 0;
+    padding: 0;
+}
+
+.input-row .small-input {
+    width: 100%;
+    margin: 0;
+    padding: 4px 8px;
+    height: 28px;
+}
+
+.btn-row {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-small {
+    margin: 0;
+    padding: 4px 8px;
+    height: 28px;
+}
+
+td.actions {
+    padding: 8px;
+    vertical-align: middle;
+}
+
+.compact-form {
+    margin: 0;
+    padding: 0;
+}
+
+/* Suppression des espacements supplémentaires */
+.compact-table td + td,
+.gestion-table td + td {
+    padding-left: 16px;
+}
+
+/* Styles pour la grille de matériel */
+.materiel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.materiel-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.materiel-card:hover {
+    transform: translateY(-5px);
+}
+
+.materiel-photo {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.no-photo {
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+.materiel-info {
+    padding: 20px;
+}
+
+.materiel-type {
+    color: #1a73e8;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.materiel-nom {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.materiel-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* Styles pour les filtres */
+.filter-section {
+    margin: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-form {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.filter-form select {
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+}
+
+.filter-form select:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+/* Styles pour les statuts */
+.status-en-attente {
+    color: #ffc107;
+}
+
+.status-validee {
+    color: #28a745;
+}
+
+.status-refusee {
+    color: #dc3545;
+}
+
+.status-annulee {
+    color: #6c757d;
+} 

@@ -1,211 +1,268 @@
-<?php
-session_start();
-header('Content-Type: application/json');
+<?php include 'gs.php'; ?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Salles - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/gestion_salle.css">
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/main.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.10/main.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.10/main.min.css' rel='stylesheet' />
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.10/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.10/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.10/main.min.js'></script>
+</head>
+<body>
+    <nav class="nav-container">
+        <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
+        <div class="nav-menu">
+            <a href="#">Tableau de bord</a>
+            <a href="#" class="active">Gestions</a>
+            <a href="#">Suivi</a>
+        </div>
+        <div class="profile-menu">
+            <img src="../img/profil.png" alt="Profile" class="profile-icon">
+            <div class="menu-icon">☰</div>
+        </div>
+    </nav>
 
-// Vérification de la session et du rôle admin
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-    echo json_encode(['error' => 'Accès non autorisé']);
-    exit();
-}
+    <main class="main-content">
+        <h1>Gestion des Salles</h1>
 
-require_once 'connexion.php';
+        <?php if ($message): ?>
+            <div class="alert alert-<?php echo $messageType; ?>">
+                <?php echo $message; ?>
+            </div>
+        <?php endif; ?>
 
-// Création du dossier uploads s'il n'existe pas
-$uploadDir = "../uploads/salles";
-if (!file_exists($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
-}
+        <!-- Formulaire d'ajout de salle -->
+        <div class="form-container">
+            <h2>Ajouter une nouvelle salle</h2>
+            <form method="POST" class="form-gestion" enctype="multipart/form-data">
+                <input type="text" name="nom" placeholder="Nom de la salle" required>
+                <input type="number" name="capacite" placeholder="Capacité" required>
+                <textarea name="description" placeholder="Description"></textarea>
+                <input type="file" name="photo" accept="image/*">
+                <div class="checkbox-line">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" name="disponible" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                    <span>Disponible</span>
+                </div>
+                <button type="submit" name="ajouter" class="btn btn-ajouter">Ajouter</button>
+            </form>
+        </div>
 
-// Fonction pour redimensionner l'image
-function resizeImage($sourcePath, $targetPath, $maxWidth = 800, $maxHeight = 600) {
-    if (!extension_loaded('gd')) {
-        return move_uploaded_file($sourcePath, $targetPath);
+        <!-- Liste des réservations -->
+        <div class="table-container">
+            <h2>Réservations en attente</h2>
+            <table class="gestion-table">
+                <thead>
+                    <tr>
+                        <th>Salle</th>
+                        <th>Date début</th>
+                        <th>Date fin</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                        <th>Commentaire</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($reservations as $reservation): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($reservation['salle_nom']); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
+                        <td><?php echo htmlspecialchars($reservation['statut']); ?></td>
+                        <td class="actions">
+                            <?php if ($reservation['statut'] === 'en_attente'): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="reservation_id" value="<?php echo $reservation['id']; ?>">
+                                <textarea name="commentaire" placeholder="Commentaire" class="commentaire-input"></textarea>
+                                <button type="submit" name="valider" class="btn btn-valider">Valider</button>
+                                <button type="button" class="btn btn-modifier" onclick="modifierDates(<?php echo $reservation['id']; ?>)">Modifier dates</button>
+                            </form>
+                            <?php elseif ($reservation['statut'] === 'validee'): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="reservation_id" value="<?php echo $reservation['id']; ?>">
+                                <button type="submit" name="annuler" class="btn btn-supprimer">Annuler</button>
+                            </form>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo htmlspecialchars($reservation['commentaire'] ?? ''); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Liste des salles -->
+        <div class="table-container">
+            <h2>Salles disponibles</h2>
+            <table class="gestion-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Capacité</th>
+                        <th>Disponible</th>
+                        <th>Photo</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($salles as $salle): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($salle['nom']); ?></td>
+                        <td><?php echo $salle['capacite']; ?></td>
+                        <td><?php echo $salle['disponible'] ? 'Oui' : 'Non'; ?></td>
+                        <td>
+                            <?php if (!empty($salle['photo'])): ?>
+                                <img src="../uploads/salles/<?php echo htmlspecialchars($salle['photo']); ?>" alt="Photo salle" style="max-width:80px;max-height:80px;">
+                            <?php else: ?>
+                                <span style="color:#888;">Aucune</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="actions">
+                            <form method="POST" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette salle ?');">
+                                <input type="hidden" name="salle_id" value="<?php echo $salle['id']; ?>">
+                                <button type="submit" name="supprimer" class="btn btn-supprimer">Supprimer</button>
+                            </form>
+                            <button type="button" class="btn btn-reserver" onclick="nouvelleReservation(<?php echo $salle['id']; ?>)">Réserver</button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy;2025 Université Eiffel. Tous droits réservés.
+    </footer>
+
+    <!-- Modal pour modification des dates -->
+    <div id="modal-dates" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Modifier les dates</h2>
+            <form method="POST" id="form-modifier-dates">
+                <input type="hidden" name="reservation_id" id="modal-reservation-id">
+                <div class="form-group">
+                    <label>Date de début</label>
+                    <input type="datetime-local" name="date_debut" required>
+                </div>
+                <div class="form-group">
+                    <label>Date de fin</label>
+                    <input type="datetime-local" name="date_fin" required>
+                </div>
+                <button type="submit" name="modifier_date" class="btn btn-modifier">Modifier</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal pour nouvelle réservation -->
+    <div id="modal-reservation" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Nouvelle réservation</h2>
+            <!-- Ajout du calendrier -->
+            <div id="calendar-reservations" style="margin-bottom: 20px;"></div>
+            <form method="POST" id="form-nouvelle-reservation">
+                <input type="hidden" name="salle_id" id="modal-salle-id">
+                <div class="form-group">
+                    <label>Date de début</label>
+                    <input type="datetime-local" name="date_debut" id="date_debut" required>
+                </div>
+                <div class="form-group">
+                    <label>Date de fin</label>
+                    <input type="datetime-local" name="date_fin" id="date_fin" required>
+                </div>
+                <button type="submit" name="reserver" class="btn btn-reserver">Réserver</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // Fonctions pour gérer les modals
+    function modifierDates(reservationId) {
+        document.getElementById('modal-reservation-id').value = reservationId;
+        document.getElementById('modal-dates').style.display = 'block';
     }
 
-    list($width, $height, $type) = getimagesize($sourcePath);
-    
-    if ($width > $maxWidth || $height > $maxHeight) {
-        $ratio = min($maxWidth / $width, $maxHeight / $height);
-        $newWidth = round($width * $ratio);
-        $newHeight = round($height * $ratio);
-    } else {
-        $newWidth = $width;
-        $newHeight = $height;
+    // Fonction pour initialiser le calendrier
+    function initCalendar(salleId) {
+        const calendarEl = document.getElementById('calendar-reservations');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            slotMinTime: '08:00:00',
+            slotMaxTime: '20:00:00',
+            allDaySlot: false,
+            locale: 'fr',
+            events: function(info, successCallback, failureCallback) {
+                // Récupérer les réservations existantes via AJAX
+                fetch(`get_reservations.php?salle_id=${salleId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        successCallback(data.map(reservation => ({
+                            title: 'Réservé',
+                            start: reservation.date_debut,
+                            end: reservation.date_fin,
+                            backgroundColor: reservation.statut === 'validee' ? '#4CAF50' : '#FFA726'
+                        })));
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        failureCallback(error);
+                    });
+            },
+            selectable: true,
+            select: function(info) {
+                document.getElementById('date_debut').value = info.startStr.slice(0, 16);
+                document.getElementById('date_fin').value = info.endStr.slice(0, 16);
+            }
+        });
+        calendar.render();
+        return calendar;
     }
 
-    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+    let currentCalendar = null;
 
-    if ($type === IMAGETYPE_PNG) {
-        imagealphablending($newImage, false);
-        imagesavealpha($newImage, true);
-        $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
-        imagefilledrectangle($newImage, 0, 0, $newWidth, $newHeight, $transparent);
+    function nouvelleReservation(salleId) {
+        document.getElementById('modal-salle-id').value = salleId;
+        document.getElementById('modal-reservation').style.display = 'block';
+        
+        // Initialiser ou mettre à jour le calendrier
+        if (currentCalendar) {
+            currentCalendar.destroy();
+        }
+        currentCalendar = initCalendar(salleId);
     }
 
-    switch ($type) {
-        case IMAGETYPE_JPEG:
-            $source = imagecreatefromjpeg($sourcePath);
-            break;
-        case IMAGETYPE_PNG:
-            $source = imagecreatefrompng($sourcePath);
-            break;
-        case IMAGETYPE_GIF:
-            $source = imagecreatefromgif($sourcePath);
-            break;
-        default:
-            return move_uploaded_file($sourcePath, $targetPath);
-    }
+    // Fermeture des modals
+    document.querySelectorAll('.close').forEach(function(close) {
+        close.onclick = function() {
+            this.closest('.modal').style.display = 'none';
+        }
+    });
 
-    imagecopyresampled($newImage, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-    $success = false;
-    switch ($type) {
-        case IMAGETYPE_JPEG:
-            $success = imagejpeg($newImage, $targetPath, 85);
-            break;
-        case IMAGETYPE_PNG:
-            $success = imagepng($newImage, $targetPath, 8);
-            break;
-        case IMAGETYPE_GIF:
-            $success = imagegif($newImage, $targetPath);
-            break;
-    }
-
-    imagedestroy($source);
-    imagedestroy($newImage);
-
-    return $success;
-}
-
-// Traitement des requêtes GET
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
-    if ($_GET['action'] === 'list') {
-        try {
-            $stmt = $connexion->query("SELECT * FROM salle ORDER BY nom");
-            $salles = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            echo json_encode(['salles' => $salles]);
-            exit();
-        } catch (PDOException $e) {
-            echo json_encode(['error' => 'Erreur lors de la récupération des salles']);
-            exit();
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
         }
     }
-}
-
-// Traitement des requêtes POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $data = json_decode(file_get_contents('php://input'), true);
-    if ($data) {
-        $action = $data['action'] ?? '';
-    }
-
-    try {
-        switch ($action) {
-            case 'add':
-                if (!isset($_POST['nom']) || !isset($_POST['capacite'])) {
-                    throw new Exception('Données manquantes');
-                }
-
-                $nom = $_POST['nom'];
-                $capacite = (int)$_POST['capacite'];
-                $description = $_POST['description'] ?? '';
-                $disponible = isset($_POST['disponible']) ? 1 : 0;
-                $photo = '';
-
-                if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                    $tmpName = $_FILES['photo']['tmp_name'];
-                    $fileName = uniqid() . '_' . $_FILES['photo']['name'];
-                    $uploadFile = $uploadDir . '/' . $fileName;
-
-                    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-                    $fileType = mime_content_type($tmpName);
-                    
-                    if (!in_array($fileType, $allowedTypes)) {
-                        throw new Exception("Type de fichier non autorisé. Utilisez JPG, PNG ou GIF.");
-                    }
-
-                    if (resizeImage($tmpName, $uploadFile)) {
-                        $photo = 'uploads/salles/' . $fileName;
-                    }
-                }
-
-                $stmt = $connexion->prepare("INSERT INTO salle (nom, capacite, description, disponible, photo) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$nom, $capacite, $description, $disponible, $photo]);
-                echo json_encode(['success' => 'Salle ajoutée avec succès']);
-                break;
-
-            case 'update':
-                if (!isset($_POST['salle_id']) || !isset($_POST['nom']) || !isset($_POST['capacite'])) {
-                    throw new Exception('Données manquantes');
-                }
-
-                $id = (int)$_POST['salle_id'];
-                $nom = $_POST['nom'];
-                $capacite = (int)$_POST['capacite'];
-                $description = $_POST['description'] ?? '';
-                $disponible = isset($_POST['disponible']) ? 1 : 0;
-
-                $stmt = $connexion->prepare("SELECT photo FROM salle WHERE id = ?");
-                $stmt->execute([$id]);
-                $oldPhoto = $stmt->fetchColumn();
-
-                if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                    $tmpName = $_FILES['photo']['tmp_name'];
-                    $fileName = uniqid() . '_' . $_FILES['photo']['name'];
-                    $uploadFile = $uploadDir . '/' . $fileName;
-
-                    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-                    $fileType = mime_content_type($tmpName);
-                    
-                    if (!in_array($fileType, $allowedTypes)) {
-                        throw new Exception("Type de fichier non autorisé. Utilisez JPG, PNG ou GIF.");
-                    }
-
-                    if (resizeImage($tmpName, $uploadFile)) {
-                        if ($oldPhoto && file_exists("../" . $oldPhoto)) {
-                            unlink("../" . $oldPhoto);
-                        }
-                        $photo = 'uploads/salles/' . $fileName;
-                        $stmt = $connexion->prepare("UPDATE salle SET nom = ?, capacite = ?, description = ?, disponible = ?, photo = ? WHERE id = ?");
-                        $stmt->execute([$nom, $capacite, $description, $disponible, $photo, $id]);
-                    }
-                } else {
-                    $stmt = $connexion->prepare("UPDATE salle SET nom = ?, capacite = ?, description = ?, disponible = ? WHERE id = ?");
-                    $stmt->execute([$nom, $capacite, $description, $disponible, $id]);
-                }
-
-                echo json_encode(['success' => 'Salle modifiée avec succès']);
-                break;
-
-            case 'delete':
-                if (!isset($data['salle_id'])) {
-                    throw new Exception('ID de salle manquant');
-                }
-
-                $id = (int)$data['salle_id'];
-
-                $stmt = $connexion->prepare("SELECT photo FROM salle WHERE id = ?");
-                $stmt->execute([$id]);
-                $photo = $stmt->fetchColumn();
-
-                if ($photo && file_exists("../" . $photo)) {
-                    unlink("../" . $photo);
-                }
-
-                $stmt = $connexion->prepare("DELETE FROM salle WHERE id = ?");
-                $stmt->execute([$id]);
-                echo json_encode(['success' => 'Salle supprimée avec succès']);
-                break;
-
-            default:
-                throw new Exception('Action non valide');
-        }
-    } catch (Exception $e) {
-        echo json_encode(['error' => $e->getMessage()]);
-    }
-    exit();
-}
-
-echo json_encode(['error' => 'Méthode non autorisée']);
-?>
+    </script>
+</body>
+</html>

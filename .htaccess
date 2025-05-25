@@ -1,20 +1,8 @@
-Options +FollowSymLinks -MultiViews
 RewriteEngine On
+RewriteBase /ResaUGE-Project/
 
-# Redirection vers HTTPS (décommenter si SSL est configuré)
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-# Autoriser l'accès direct à index.php
-RewriteCond %{REQUEST_URI} ^/SAE_201-203/index\.php$ [OR]
-RewriteCond %{REQUEST_URI} ^/SAE_201-203/PHP/init_db\.php$
-RewriteRule ^ - [L]
-
-# Protection des fichiers de configuration
-<FilesMatch "^(config\.php|database\.sql)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+# Empêcher la navigation dans les répertoires
+Options -Indexes
 
 # Définir l'index par défaut
 DirectoryIndex index.php
@@ -25,5 +13,22 @@ DirectoryIndex index.php
     Allow from all
 </FilesMatch>
 
-# Empêcher la navigation dans les répertoires
-Options -Indexes 
+# Protection des fichiers sensibles
+<FilesMatch "^(config\.php|database\.sql)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Redirection des pages principales
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^$ index.php [L]
+RewriteRule ^admin/?$ PHP/admin.php [L]
+RewriteRule ^teacher/?$ PHP/teacher.php [L]
+RewriteRule ^student/?$ PHP/student.php [L]
+RewriteRule ^agent/?$ PHP/agent.php [L]
+
+# Redirection des autres pages PHP
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/?$ PHP/$1.php [L] 
