@@ -44,12 +44,44 @@ CREATE TABLE IF NOT EXISTS reservation (
     FOREIGN KEY (salle_id) REFERENCES salle(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Structure de la table materiel
+CREATE TABLE IF NOT EXISTS materiel (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    description TEXT,
+    numero_serie VARCHAR(100),
+    etat VARCHAR(50) DEFAULT 'bon',
+    disponible BOOLEAN DEFAULT 1,
+    photo VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Structure de la table reservation_materiel
+CREATE TABLE IF NOT EXISTS reservation_materiel (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    materiel_id INT NOT NULL,
+    user_id INT NOT NULL,
+    date_debut DATETIME NOT NULL,
+    date_fin DATETIME NOT NULL,
+    statut ENUM('en_attente', 'validee', 'refusee', 'annulee') DEFAULT 'en_attente',
+    commentaire TEXT,
+    signature_admin VARCHAR(255),
+    date_signature DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (materiel_id) REFERENCES materiel(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES utilisateur(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Ajout d'index pour améliorer les performances
 CREATE INDEX idx_user_email ON utilisateur(email);
 CREATE INDEX idx_user_role ON utilisateur(role);
 CREATE INDEX idx_user_valide ON utilisateur(valide);
 CREATE INDEX idx_reservation_dates ON reservation(date_debut, date_fin);
 CREATE INDEX idx_reservation_statut ON reservation(statut);
+CREATE INDEX idx_materiel_type ON materiel(type);
+CREATE INDEX idx_reservation_materiel_dates ON reservation_materiel(date_debut, date_fin);
 
 -- Instructions pour l'importation :
 -- 1. Ouvrir phpMyAdmin
