@@ -1,6 +1,6 @@
 <?php
 require_once 'check_session.php';
-$user = checkSession('agent');
+// Le fichier check_session.php s'occupe déjà de toutes les vérifications
 ?>
 <!DOCTYPE html>
 <html lang="fr">
