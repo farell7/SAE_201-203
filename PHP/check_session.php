@@ -1,9 +1,12 @@
 <?php
 session_start();
 
+// Définir le chemin de base
+define('BASE_PATH', '/SAE_201-203');
+
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['utilisateur'])) {
-    header('Location: ../index.php');
+    header('Location: ' . BASE_PATH . '/index.php');
     exit();
 }
 
@@ -17,25 +20,25 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
 switch($current_page) {
     case 'admin':
         if ($role !== 'admin') {
-            header('Location: ../index.php');
+            header('Location: ' . BASE_PATH . '/index.php');
             exit();
         }
         break;
     case 'teacher':
         if ($role !== 'teacher') {
-            header('Location: ../index.php');
+            header('Location: ' . BASE_PATH . '/index.php');
             exit();
         }
         break;
     case 'agent':
         if ($role !== 'agent') {
-            header('Location: ../index.php');
+            header('Location: ' . BASE_PATH . '/index.php');
             exit();
         }
         break;
     case 'student':
         if ($role !== 'student') {
-            header('Location: ../index.php');
+            header('Location: ' . BASE_PATH . '/index.php');
             exit();
         }
         break;

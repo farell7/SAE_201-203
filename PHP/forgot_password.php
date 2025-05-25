@@ -1,64 +1,132 @@
 <?php
-header('Content-Type: application/json');
-require_once 'connexion.php';
+session_start();
+require_once 'config.php';
 
-// Vérification des données POST
-if (!isset($_POST['email'])) {
-    echo json_encode(['error' => 'Veuillez fournir une adresse email']);
-    exit();
+// Définir le chemin de base s'il n'est pas déjà défini
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', '/SAE_201-203');
 }
 
-$email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+$message = '';
+$messageType = '';
 
-// Validation de l'email
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['error' => 'Adresse email invalide']);
-    exit();
-}
-
-try {
-    // Vérification si l'email existe
-    $stmt = $connexion->prepare("SELECT id FROM utilisateurs WHERE email = :email");
-    $stmt->execute(['email' => $email]);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? '';
     
-    if (!$stmt->fetch()) {
-        echo json_encode(['error' => 'Aucun compte associé à cette adresse email']);
-        exit();
-    }
-
-    // Génération d'un token unique
-    $token = bin2hex(random_bytes(32));
-    $expiry = date('Y-m-d H:i:s', strtotime('+24 hours'));
-
-    // Enregistrement du token
-    $stmt = $connexion->prepare("UPDATE utilisateurs SET reset_token = :token, reset_token_expiry = :expiry WHERE email = :email");
-    $stmt->execute([
-        'token' => $token,
-        'expiry' => $expiry,
-        'email' => $email
-    ]);
-
-    // Envoi de l'email
-    $resetLink = "https://" . $_SERVER['HTTP_HOST'] . "/reset_password.html?token=" . $token;
-    $to = $email;
-    $subject = "Réinitialisation de votre mot de passe - Université Eiffel";
-    $message = "Bonjour,\n\n";
-    $message .= "Vous avez demandé la réinitialisation de votre mot de passe.\n";
-    $message .= "Cliquez sur le lien suivant pour réinitialiser votre mot de passe :\n";
-    $message .= $resetLink . "\n\n";
-    $message .= "Ce lien est valable pendant 24 heures.\n";
-    $message .= "Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.\n\n";
-    $message .= "Cordialement,\nL'équipe de l'Université Eiffel";
-    
-    $headers = "From: no-reply@univ-eiffel.fr";
-
-    if (mail($to, $subject, $message, $headers)) {
-        echo json_encode(['success' => 'Un email de réinitialisation a été envoyé à votre adresse']);
+    if (empty($email)) {
+        $message = "Veuillez fournir une adresse email";
+        $messageType = 'error';
     } else {
-        echo json_encode(['error' => 'Erreur lors de l\'envoi de l\'email']);
+        try {
+            $stmt = $conn->prepare("SELECT * FROM utilisateur WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
+            
+            if ($user) {
+                // Générer un token unique
+                $token = bin2hex(random_bytes(32));
+                $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
+                
+                // Sauvegarder le token dans la base de données
+                $stmt = $conn->prepare("UPDATE utilisateur SET reset_token = ?, reset_expiry = ? WHERE email = ?");
+                $stmt->execute([$token, $expiry, $email]);
+                
+                // Envoyer l'email (simulation)
+                $resetLink = "http://" . $_SERVER['HTTP_HOST'] . BASE_PATH . "/PHP/reset_password.php?token=" . $token;
+                
+                $message = "Si cette adresse email existe dans notre base de données, vous recevrez un lien de réinitialisation.<br>
+                          Pour cette démo, voici le lien : <a href='$resetLink'>Réinitialiser le mot de passe</a>";
+                $messageType = 'success';
+            } else {
+                // Pour des raisons de sécurité, on affiche le même message que si l'email existe
+                $message = "Si cette adresse email existe dans notre base de données, vous recevrez un lien de réinitialisation.";
+                $messageType = 'info';
+            }
+        } catch(PDOException $e) {
+            $message = "Une erreur est survenue. Veuillez réessayer plus tard.";
+            $messageType = 'error';
+        }
     }
-
-} catch (PDOException $e) {
-    echo json_encode(['error' => 'Erreur lors du traitement de la demande']);
 }
-?> 
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mot de passe oublié - ResaUGE</title>
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>/CSS/styleindex.css">
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .message.error {
+            background-color: #ffe6e6;
+            color: #ff0000;
+        }
+        .message.success {
+            background-color: #e6ffe6;
+            color: #006600;
+        }
+        .message.info {
+            background-color: #e6f2ff;
+            color: #004d99;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        input[type="email"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background: #2f2a85;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d1b54;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mot de passe oublié</h1>
+        
+        <?php if ($message): ?>
+            <div class="message <?php echo $messageType; ?>">
+                <?php echo $message; ?>
+            </div>
+        <?php endif; ?>
+        
+        <form method="POST" action="<?php echo BASE_PATH; ?>/PHP/forgot_password.php">
+            <input type="email" name="email" placeholder="Votre adresse email" required>
+            <button type="submit">Réinitialiser le mot de passe</button>
+        </form>
+        
+        <div class="back-link">
+            <a href="<?php echo BASE_PATH; ?>/index.php">Retour à la connexion</a>
+        </div>
+    </div>
+</body>
+</html> 

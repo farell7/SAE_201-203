@@ -12,10 +12,12 @@ CREATE TABLE IF NOT EXISTS utilisateur (
     pseudo VARCHAR(50) NOT NULL,
     code_postal VARCHAR(5) NOT NULL,
     date_naissance DATE NOT NULL,
-    role ENUM('student', 'teacher', 'agent', 'admin') NOT NULL,
-    valide BOOLEAN DEFAULT 0,
+    role ENUM('student', 'teacher', 'agent', 'admin') NOT NULL DEFAULT 'student',
+    reset_token VARCHAR(64) DEFAULT NULL,
+    reset_expiry DATETIME DEFAULT NULL,
+    compte_valide BOOLEAN DEFAULT FALSE,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table des salles
 CREATE TABLE IF NOT EXISTS salle (
@@ -23,11 +25,15 @@ CREATE TABLE IF NOT EXISTS salle (
     nom VARCHAR(100) NOT NULL,
     capacite INT NOT NULL,
     type VARCHAR(50) NOT NULL,
+    description TEXT,
+    photo VARCHAR(255),
     equipements TEXT,
-    disponible BOOLEAN DEFAULT TRUE
-);
+    disponible BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Table des réservations
+-- Table des réservations de salles
 CREATE TABLE IF NOT EXISTS reservation (
     id INT AUTO_INCREMENT PRIMARY KEY,
     utilisateur_id INT NOT NULL,
@@ -35,29 +41,34 @@ CREATE TABLE IF NOT EXISTS reservation (
     date_debut DATETIME NOT NULL,
     date_fin DATETIME NOT NULL,
     motif TEXT,
-    statut ENUM('en_attente', 'approuvee', 'refusee') DEFAULT 'en_attente',
-    FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id),
-    FOREIGN KEY (salle_id) REFERENCES salle(id)
-);
+    statut ENUM('en_attente', 'validee', 'refusee', 'annulee') DEFAULT 'en_attente',
+    commentaire TEXT,
+    signature_admin VARCHAR(255),
+    date_signature DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE,
+    FOREIGN KEY (salle_id) REFERENCES salle(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table du matériel
 CREATE TABLE IF NOT EXISTS materiel (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
+    nom VARCHAR(255) NOT NULL,
     type VARCHAR(50) NOT NULL,
-    quantite_disponible INT NOT NULL,
-    description TEXT
-);
+    description TEXT,
+    numero_serie VARCHAR(100),
+    etat ENUM('bon', 'moyen', 'mauvais') DEFAULT 'bon',
+    disponible BOOLEAN DEFAULT TRUE,
+    photo VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insertion d'un administrateur par défaut
-INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) VALUES
-('Admin', 'System', 'admin@resauge.fr', '$2y$10$YourHashedPasswordHere', 'admin');
-
--- Structure de la table reservation_materiel
+-- Table des réservations de matériel
 CREATE TABLE IF NOT EXISTS reservation_materiel (
     id INT AUTO_INCREMENT PRIMARY KEY,
     materiel_id INT NOT NULL,
-    user_id INT NOT NULL,
+    utilisateur_id INT NOT NULL,
     date_debut DATETIME NOT NULL,
     date_fin DATETIME NOT NULL,
     statut ENUM('en_attente', 'validee', 'refusee', 'annulee') DEFAULT 'en_attente',
@@ -66,12 +77,36 @@ CREATE TABLE IF NOT EXISTS reservation_materiel (
     date_signature DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (materiel_id) REFERENCES materiel(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES utilisateur(id) ON DELETE CASCADE
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insertion d'un administrateur par défaut
+INSERT INTO utilisateur (
+    nom, 
+    prenom, 
+    email, 
+    mot_de_passe, 
+    pseudo, 
+    code_postal, 
+    date_naissance, 
+    role,
+    compte_valide
+) VALUES (
+    'Admin', 
+    'System', 
+    'admin@resauge.fr', 
+    '$2y$10$YourHashedPasswordHere', 
+    'admin',
+    '77420',
+    '2000-01-01',
+    'admin',
+    TRUE
+);
 
 -- Ajout d'index pour améliorer les performances
 CREATE INDEX idx_user_email ON utilisateur(email);
 CREATE INDEX idx_user_role ON utilisateur(role);
+CREATE INDEX idx_user_reset_token ON utilisateur(reset_token);
 CREATE INDEX idx_reservation_dates ON reservation(date_debut, date_fin);
 CREATE INDEX idx_reservation_statut ON reservation(statut);
 CREATE INDEX idx_materiel_type ON materiel(type);
