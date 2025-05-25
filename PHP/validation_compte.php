@@ -1,145 +1,144 @@
-<?php
-session_start();
-header('Content-Type: application/json');
-
-// Vérification de la session et du rôle admin
-if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'admin') {
-    echo json_encode(['error' => 'Accès non autorisé']);
-    exit();
-}
-
-require 'connexion.php';
-
-$stmt = $pdo->query("SELECT * FROM utilisateur ORDER BY valide ASC, id DESC");
-$users = $stmt->fetchAll();
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['user_id'])) {
-    $userId = (int)$_POST['user_id'];
-    $action = $_POST['action'];
-    
-    $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE id = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch();
-    
-    if ($user) {
-        if ($action === 'validate') {
-            $stmt = $pdo->prepare("UPDATE utilisateur SET valide = 1 WHERE id = ?");
-            $stmt->execute([$userId]);
-        } elseif ($action === 'reject') {
-            $stmt = $pdo->prepare("UPDATE utilisateur SET valide = 0 WHERE id = ?");
-            $stmt->execute([$userId]);
-        }
-    }
-    
-    header('Location: ' . $_SERVER['PHP_SELF']);
-    exit;
-}
+<?php 
+require_once('check_session.php');
+include 'vc.php'; 
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validation de comptes - Admin</title>
-    <link rel="stylesheet" href="../CSS/stylevalidation.css">
+    <title>Gestion des Utilisateurs - ResaUGE</title>
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/vc.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Comptes à Valider</h1>
-        <p>Voici la liste des comptes en attente de validation.</p>
-        <div class="controls">
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Rechercher par nom, prénom, email...">
-            </div>
-            
-            <div class="filter-group">
-                <select id="roleFilter">
-                    <option value="all">Tous les rôles</option>
-                    <option value="student">Étudiant</option>
-                    <option value="teacher">Enseignant</option>
-                    <option value="agent">Agent</option>
-                    <option value="admin">Admin</option>
-                </select>
-                
-                <select id="statusFilter">
-                    <option value="all">Tous les statuts</option>
-                    <option value="pending">En attente</option>
-                    <option value="validated">Validés</option>
-                </select>
-            </div>
+    <nav>
+        <div class="nav-left">
+            <a href="#" class="logo">Logo ResaUGE</a>
+            <a href="admin_dashboard.php">Accueil</a>
+            <a href="gestion_salles.php">Salles</a>
+            <a href="validation_compte.php" class="active">Utilisateurs</a>
+            <a href="statistiques.php">Statistiques</a>
         </div>
+        <div class="nav-right">
+            <span>admin admin</span>
+            <a href="../logout.php">Déconnexion</a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <h1>Gestion des Utilisateurs</h1>
         
-        <div class="table-container">
-            <table id="usersTable">
-                <thead>
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Date d'inscription</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (isset($utilisateurs) && is_array($utilisateurs)): ?>
+                    <?php foreach ($utilisateurs as $user): ?>
                     <tr>
-                        <th class="sortable" data-sort="nom">Nom</th>
-                        <th class="sortable" data-sort="prenom">Prénom</th>
-                        <th class="sortable" data-sort="email">Email</th>
-                        <th class="sortable" data-sort="role">Rôle</th>
-                        <th class="sortable" data-sort="valide">Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user): ?>
-                    <tr data-id="<?= $user['id'] ?>" data-role="<?= htmlspecialchars($user['role']) ?>" data-status="<?= $user['valide'] ? 'validated' : 'pending' ?>">
                         <td><?= htmlspecialchars($user['nom']) ?></td>
                         <td><?= htmlspecialchars($user['prenom']) ?></td>
                         <td><?= htmlspecialchars($user['email']) ?></td>
+                        <td><?= htmlspecialchars($user['role']) ?></td>
+                        <td><?= date('d/m/Y H:i', strtotime($user['date_creation'])) ?></td>
                         <td>
-                            <span class="badge badge-<?= $user['role'] === 'admin' ? 'danger' : ($user['role'] === 'agent' ? 'primary' : 'secondary') ?>">
-                                <?= htmlspecialchars($user['role']) ?>
+                            <span class="status <?= $user['valide'] ? 'status-validated' : 'status-pending' ?>">
+                                <?= $user['valide'] ? 'Validé' : 'En attente' ?>
                             </span>
                         </td>
                         <td>
-                            <?php if ($user['valide']): ?>
-                                <span class="badge badge-success">Validé</span>
-                            <?php else: ?>
-                                <span class="badge badge-warning">En attente</span>
+                            <?php if (!$user['valide']): ?>
+                            <button class="action-btn validate-btn" onclick="validerCompte(<?= $user['id'] ?>)">
+                                Valider
+                            </button>
                             <?php endif; ?>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <?php if (!$user['valide']): ?>
-                                    <button class="btn-validate" onclick="openModal('validate', <?= $user['id'] ?>, '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['nom']) ?>')">Valider</button>
-                                    <button class="btn-reject" onclick="openModal('reject', <?= $user['id'] ?>, '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['nom']) ?>')">Rejeter</button>
-                                <?php else: ?>
-                                    <button class="btn-reject" onclick="openModal('reject', <?= $user['id'] ?>, '<?= htmlspecialchars($user['prenom']) ?>', '<?= htmlspecialchars($user['nom']) ?>')">Invalider</button>
-                                <?php endif; ?>
-                            </div>
+                            <button class="action-btn delete-btn" onclick="supprimerCompte(<?= $user['id'] ?>)">
+                                Supprimer
+                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        
-        <div id="noResults" class="text-center hidden">
-            <p>Aucun compte ne correspond aux critères de recherche.</p>
-        </div>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
-    
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Confirmation</h3>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ResaUGE</h3>
+                <p>Système de réservation de salles<br>Université Gustave Eiffel</p>
             </div>
-            <div class="modal-body" id="modalBody">
-                Êtes-vous sûr de vouloir effectuer cette action ?
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: support@resauge.fr<br>Tél: 01 23 45 67 89</p>
             </div>
-            <div class="modal-footer">
-                <button class="secondary" onclick="closeModal()">Annuler</button>
-                <form method="POST" id="actionForm">
-                    <input type="hidden" name="user_id" id="modalUserId">
-                    <input type="hidden" name="action" id="modalAction">
-                    <button type="submit" id="confirmButton">Confirmer</button>
-                </form>
+            <div class="footer-section">
+                <h3>Liens utiles</h3>
+                <a href="https://www.univ-gustave-eiffel.fr" target="_blank">Site de l'université</a><br>
+                <a href="mentions_legales.php">Mentions légales</a>
             </div>
         </div>
-    </div>
-    <script src="../JS/scriptvalidation.js"></script>
+        <div class="footer-bottom">
+            <p>&copy; <?= date('Y') ?> ResaUGE - Tous droits réservés</p>
+        </div>
+    </footer>
+
+    <script>
+    function validerCompte(userId) {
+        if (confirm('Voulez-vous vraiment valider ce compte ?')) {
+            fetch('validation_compte.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    userId: userId,
+                    action: 'valider'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la validation du compte');
+                }
+            });
+        }
+    }
+
+    function supprimerCompte(userId) {
+        if (confirm('Voulez-vous vraiment supprimer ce compte ?')) {
+            fetch('validation_compte.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    userId: userId,
+                    action: 'supprimer'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la suppression du compte');
+                }
+            });
+        }
+    }
+    </script>
 </body>
 </html>
