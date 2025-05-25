@@ -129,7 +129,7 @@ require_once 'check_session.php';
         <a href="mes_cours.php">Mes Cours</a>
         <a href="planning.php">Planning</a>
         <a href="mon_profil.php">Mon Profil</a>
-        <a href="logout.php">Déconnexion</a>
+        <a href="../logout.php">Déconnexion</a>
     </nav>
 
     <div class="main-content">

@@ -9,12 +9,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/gestion_salle.css">
+    <link rel="stylesheet" href="../CSS/reservation_salle.css">
 </head>
 <body>
     <nav class="nav-container">
         <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
         <div class="nav-menu">
-            <a href="#">Accueil</a>
+            <a href="student.php">Accueil</a>
             <a href="#" class="active">Réservations</a>
             <a href="#">Mon Compte</a>
         </div>
@@ -25,54 +26,56 @@
     </nav>
 
     <main class="main-content">
-        <h1>Réservation de Salle</h1>
+        <div class="salles-section">
+            <h1>Réservation de Salle</h1>
 
-        <?php if ($message): ?>
-            <div class="alert alert-<?php echo $messageType; ?>">
-                <?php echo $message; ?>
-            </div>
-        <?php endif; ?>
+            <?php if ($message): ?>
+                <div class="alert alert-<?php echo $messageType; ?>">
+                    <?php echo $message; ?>
+                </div>
+            <?php endif; ?>
 
-        <!-- Liste des salles disponibles sous forme de cartes -->
-        <h2 style="margin-top:40px;">Salles disponibles</h2>
-        <div style="display:flex;flex-wrap:wrap;gap:24px;">
-        <?php foreach ($salles as $salle): ?>
-            <div style="background:#fff;border-radius:10px;box-shadow:0 2px 8px #0001;padding:20px;width:300px;display:flex;flex-direction:column;align-items:center;">
-                <?php if (!empty($salle['photo'])): ?>
-                    <img src="../uploads/salles/<?php echo htmlspecialchars($salle['photo']); ?>" alt="Photo salle" style="max-width:240px;max-height:180px;border-radius:8px;margin-bottom:10px;object-fit:cover;">
-                <?php endif; ?>
-                <h3 style="margin:0 0 8px 0;"><?php echo htmlspecialchars($salle['nom']); ?></h3>
-                <p style="margin:0 0 4px 0;">Capacité : <b><?php echo $salle['capacite']; ?></b></p>
-                <p style="margin:0 0 4px 0;">Disponible : <b><?php echo $salle['disponible'] ? 'Oui' : 'Non'; ?></b></p>
-                <?php if (!empty($salle['description'])): ?>
-                    <p style="font-size:0.95em;color:#555;margin:0 0 4px 0;">"<?php echo htmlspecialchars($salle['description']); ?>"</p>
-                <?php endif; ?>
-                <button type="button" class="btn btn-reserver" onclick="afficherFormReservation(<?php echo $salle['id']; ?>)">Réserver</button>
+            <!-- Liste des salles disponibles sous forme de cartes -->
+            <h2>Salles disponibles</h2>
+            <div class="salles-grid">
+            <?php foreach ($salles as $salle): ?>
+                <div class="salle-card">
+                    <?php if (!empty($salle['photo'])): ?>
+                        <img src="../uploads/salles/<?php echo htmlspecialchars($salle['photo']); ?>" alt="Photo salle" class="salle-photo">
+                    <?php endif; ?>
+                    <h3 class="salle-nom"><?php echo htmlspecialchars($salle['nom']); ?></h3>
+                    <p class="salle-info">Capacité : <b><?php echo $salle['capacite']; ?></b></p>
+                    <p class="salle-info">Disponible : <b><?php echo $salle['disponible'] ? 'Oui' : 'Non'; ?></b></p>
+                    <?php if (!empty($salle['description'])): ?>
+                        <p class="salle-description">"<?php echo htmlspecialchars($salle['description']); ?>"</p>
+                    <?php endif; ?>
+                    <button type="button" class="btn btn-reserver" onclick="afficherFormReservation(<?php echo $salle['id']; ?>)">Réserver</button>
+                </div>
+            <?php endforeach; ?>
             </div>
-        <?php endforeach; ?>
+
+            <!-- Formulaire de réservation masqué par défaut -->
+            <div id="form-reservation-dynamique" class="form-reservation">
+                <h2>Nouvelle réservation</h2>
+                <form method="POST" class="form-gestion">
+                    <input type="hidden" name="salle_id" id="input-salle-id">
+                    <div id="nom-salle-selectionnee" class="salle-nom"></div>
+                    <div class="form-group">
+                        <label>Date de début</label>
+                        <input type="datetime-local" name="date_debut" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date de fin</label>
+                        <input type="datetime-local" name="date_fin" required>
+                    </div>
+                    <button type="submit" name="reserver" class="btn btn-reserver">Réserver</button>
+                </form>
+            </div>
         </div>
 
-        <!-- Formulaire de réservation masqué par défaut -->
-        <div id="form-reservation-dynamique" style="display:none;margin:40px auto 0 auto;max-width:400px;">
-            <h2>Nouvelle réservation</h2>
-            <form method="POST" class="form-gestion">
-                <input type="hidden" name="salle_id" id="input-salle-id">
-                <div id="nom-salle-selectionnee" style="font-weight:bold;margin-bottom:10px;"></div>
-                <div class="form-group">
-                    <label>Date de début</label>
-                    <input type="datetime-local" name="date_debut" required>
-                </div>
-                <div class="form-group">
-                    <label>Date de fin</label>
-                    <input type="datetime-local" name="date_fin" required>
-                </div>
-                <button type="submit" name="reserver" class="btn btn-reserver">Réserver</button>
-            </form>
-        </div>
-
-        <!-- Liste des réservations -->
-        <div class="table-container">
-            <h2>Mes réservations</h2>
+        <!-- Historique des réservations -->
+        <div class="historique-reservations">
+            <h2>Historique de mes réservations</h2>
             <table class="gestion-table">
                 <thead>
                     <tr>
@@ -110,7 +113,6 @@
     <script>
     // Affiche le formulaire de réservation pour la salle choisie
     function afficherFormReservation(salleId) {
-        // Récupérer le nom de la salle
         var salles = <?php echo json_encode($salles); ?>;
         var salle = salles.find(s => s.id == salleId);
         document.getElementById('input-salle-id').value = salleId;

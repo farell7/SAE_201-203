@@ -1,57 +1,4 @@
-<?php
-session_start();
-require_once 'connexion.php';
-
-// Vérification de la session
-if (!isset($_SESSION['utilisateur'])) {
-    header('Location: ../index.php');
-    exit();
-}
-
-// Messages de retour pour l'utilisateur
-$message = '';
-$messageType = '';
-
-// Traitement des actions POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['reserver'])) {
-        try {
-            $materiel_id = (int)$_POST['materiel_id'];
-            $date_debut = $_POST['date_debut'];
-            $date_fin = $_POST['date_fin'];
-            $user_id = $_SESSION['utilisateur']['id'];
-
-            // Créer la réservation
-            $stmt = $connexion->prepare("
-                INSERT INTO reservation_materiel (materiel_id, user_id, date_debut, date_fin, statut) 
-                VALUES (?, ?, ?, ?, 'en_attente')
-            ");
-            $stmt->execute([$materiel_id, $user_id, $date_debut, $date_fin]);
-
-            $message = "Votre demande de réservation a été enregistrée et est en attente de validation";
-            $messageType = "success";
-        } catch (Exception $e) {
-            $message = "Erreur : " . $e->getMessage();
-            $messageType = "error";
-        }
-    }
-}
-
-// Récupérer la liste du matériel
-$materiels = $connexion->query("SELECT * FROM materiel ORDER BY nom")->fetchAll(PDO::FETCH_ASSOC);
-
-// Récupérer les réservations de l'utilisateur
-$stmt = $connexion->prepare("
-    SELECT r.*, m.nom as materiel_nom, m.type as materiel_type
-    FROM reservation_materiel r 
-    JOIN materiel m ON r.materiel_id = m.id 
-    WHERE r.user_id = ?
-    ORDER BY r.created_at DESC
-");
-$stmt->execute([$_SESSION['utilisateur']['id']]);
-$reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-?>
-
+<?php include 'rm.php'; ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -61,13 +8,15 @@ $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../CSS/gestion_salle.css">
+    <link rel="stylesheet" href="../CSS/reservation_mat.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 </head>
 <body>
     <nav class="nav-container">
         <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
         <div class="nav-menu">
-            <a href="#">Accueil</a>
+            <a href="student.php">Accueil</a>
             <a href="#" class="active">Réservations</a>
             <a href="#">Mon Compte</a>
         </div>
@@ -78,72 +27,93 @@ $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </nav>
 
     <main class="main-content">
-        <h1>Réservation de Matériel</h1>
-
         <?php if ($message): ?>
             <div class="alert alert-<?php echo $messageType; ?>">
                 <?php echo $message; ?>
             </div>
         <?php endif; ?>
 
-        <!-- Formulaire de réservation -->
-        <div class="form-container">
-            <h2>Nouvelle réservation</h2>
-            <form method="POST" class="form-gestion">
-                <select name="materiel_id" required>
-                    <option value="">Sélectionnez un matériel</option>
-                    <?php foreach ($materiels as $materiel): ?>
-                        <option value="<?php echo $materiel['id']; ?>">
-                            <?php echo htmlspecialchars($materiel['nom']); ?> 
-                            (<?php echo htmlspecialchars($materiel['type']); ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+        <div class="materiel-section">
+            <h1>Réservation de Matériel</h1>
 
-                <div class="form-group">
-                    <label>Date de début</label>
-                    <input type="datetime-local" name="date_debut" required>
+            <!-- Grille de matériel -->
+            <div class="materiel-grid">
+                <?php foreach ($materiels as $materiel): ?>
+                    <div class="materiel-card">
+                        <?php if (!empty($materiel['photo'])): ?>
+                            <img src="../uploads/materiel/<?php echo htmlspecialchars($materiel['photo']); ?>" alt="Photo matériel" class="materiel-photo">
+                        <?php else: ?>
+                            <div class="no-photo">Pas de photo</div>
+                        <?php endif; ?>
+                        <div class="materiel-info">
+                            <h3 class="materiel-nom"><?php echo htmlspecialchars($materiel['nom']); ?></h3>
+                            <p class="materiel-type"><?php echo htmlspecialchars($materiel['type']); ?></p>
+                            <?php if (!empty($materiel['description'])): ?>
+                                <p class="materiel-description"><?php echo htmlspecialchars($materiel['description']); ?></p>
+                            <?php endif; ?>
+                            <button type="button" class="btn btn-reserver" 
+                                    onclick="afficherCalendrier(<?php echo $materiel['id']; ?>, 
+                                                              '<?php echo addslashes($materiel['nom']); ?>', 
+                                                              '<?php echo $materiel['reservations']; ?>')">
+                                Réserver
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Modal avec calendrier -->
+            <div id="modal-reservation" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Réserver : <span id="materiel-nom"></span></h2>
+                    <div id="calendar"></div>
+                    <form method="POST" id="form-reservation" class="form-reservation">
+                        <input type="hidden" name="materiel_id" id="materiel_id">
+                        <div class="form-group">
+                            <label>Date de début</label>
+                            <input type="datetime-local" name="date_debut" id="date_debut" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Date de fin</label>
+                            <input type="datetime-local" name="date_fin" id="date_fin" required>
+                        </div>
+                        <button type="submit" name="reserver" class="btn btn-reserver">Confirmer la réservation</button>
+                    </form>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label>Date de fin</label>
-                    <input type="datetime-local" name="date_fin" required>
-                </div>
-
-                <button type="submit" name="reserver" class="btn btn-reserver">Réserver</button>
-            </form>
-        </div>
-
-        <!-- Liste des réservations -->
-        <div class="table-container">
-            <h2>Mes réservations</h2>
-            <table class="gestion-table">
-                <thead>
-                    <tr>
-                        <th>Matériel</th>
-                        <th>Type</th>
-                        <th>Date début</th>
-                        <th>Date fin</th>
-                        <th>Statut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($reservations as $reservation): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($reservation['materiel_nom']); ?></td>
-                        <td><?php echo htmlspecialchars($reservation['materiel_type']); ?></td>
-                        <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
-                        <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
-                        <td>
-                            <span class="badge <?php echo $reservation['statut'] === 'validee' ? 'bg-success' : 
-                                ($reservation['statut'] === 'en_attente' ? 'bg-warning' : 'bg-danger'); ?>">
-                                <?php echo htmlspecialchars($reservation['statut']); ?>
-                            </span>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <!-- Liste des réservations -->
+            <div class="table-container">
+                <h2>Mes réservations</h2>
+                <table class="gestion-table">
+                    <thead>
+                        <tr>
+                            <th>Matériel</th>
+                            <th>Type</th>
+                            <th>Date début</th>
+                            <th>Date fin</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($reservations as $reservation): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($reservation['materiel_nom']); ?></td>
+                            <td><?php echo htmlspecialchars($reservation['materiel_type']); ?></td>
+                            <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
+                            <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
+                            <td>
+                                <span class="badge <?php echo $reservation['statut'] === 'validee' ? 'bg-success' : 
+                                    ($reservation['statut'] === 'en_attente' ? 'bg-warning' : 'bg-danger'); ?>">
+                                    <?php echo htmlspecialchars($reservation['statut']); ?>
+                                </span>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -152,25 +122,68 @@ $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </footer>
 
     <script>
-    // Définir la date minimale pour les champs datetime-local
+    let calendar;
+
     document.addEventListener('DOMContentLoaded', function() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        
-        const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-        
-        document.querySelector('input[name="date_debut"]').min = minDateTime;
-        document.querySelector('input[name="date_fin"]').min = minDateTime;
+        // Initialisation du calendrier
+        const calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            selectable: true,
+            select: function(info) {
+                document.getElementById('date_debut').value = info.startStr;
+                document.getElementById('date_fin').value = info.endStr;
+            }
+        });
+        calendar.render();
     });
 
+    function afficherCalendrier(materielId, materielNom, reservations) {
+        document.getElementById('materiel_id').value = materielId;
+        document.getElementById('materiel-nom').textContent = materielNom;
+        
+        // Nettoyer les événements existants
+        calendar.removeAllEvents();
+        
+        // Ajouter les réservations existantes
+        if (reservations) {
+            const events = reservations.split(';').map(reservation => {
+                const [debut, fin, statut] = reservation.split('|');
+                return {
+                    start: debut,
+                    end: fin,
+                    title: 'Réservé',
+                    color: statut === 'validee' ? '#28a745' : 
+                           (statut === 'en_attente' ? '#ffc107' : '#dc3545')
+                };
+            });
+            calendar.addEventSource(events);
+        }
+        
+        document.getElementById('modal-reservation').style.display = 'block';
+    }
+
+    // Fermeture du modal
+    document.querySelector('.close').onclick = function() {
+        document.getElementById('modal-reservation').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+
     // Validation des dates
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const dateDebut = new Date(document.querySelector('input[name="date_debut"]').value);
-        const dateFin = new Date(document.querySelector('input[name="date_fin"]').value);
+    document.getElementById('form-reservation').addEventListener('submit', function(e) {
+        const dateDebut = new Date(document.getElementById('date_debut').value);
+        const dateFin = new Date(document.getElementById('date_fin').value);
         
         if (dateFin <= dateDebut) {
             e.preventDefault();

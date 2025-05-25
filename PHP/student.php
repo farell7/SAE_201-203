@@ -17,160 +17,63 @@ if ($user['role'] !== 'student') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Espace Étudiant - ResaUGE</title>
-    <link rel="stylesheet" href="../CSS/stylestudent.css">
-    <style>
-        body {
-            font-family: 'Montserrat', Arial, sans-serif;
-            background: rgb(242, 245, 250);
-            margin: 0;
-            min-height: 100vh;
-        }
-
-        nav {
-            background: rgb(29, 37, 126);
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            margin: 0 0.5rem;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        nav a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .main-content {
-            padding: 80px 2rem 2rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            color: rgb(29, 37, 126);
-            margin-bottom: 0.5rem;
-        }
-
-        h2 {
-            color: #666;
-            margin-bottom: 2rem;
-        }
-
-        .course-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 1rem 0;
-        }
-
-        .course-card {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 2px 12px rgba(60,60,100,0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(60,60,100,0.15);
-        }
-
-        .course-card img {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 1rem;
-        }
-
-        .course-card h3 {
-            color: rgb(29, 37, 126);
-            margin-bottom: 1rem;
-        }
-
-        .course-card p {
-            color: #666;
-            line-height: 1.5;
-        }
-
-        footer {
-            background: rgb(29, 37, 126);
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-
-        @media (max-width: 768px) {
-            .course-cards {
-                grid-template-columns: 1fr;
-            }
-
-            nav {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            nav a {
-                margin: 0.25rem 0;
-                width: 100%;
-                text-align: center;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/student.css">
 </head>
 <body>
-    <nav>
-        <a href="#">Accueil</a>
-        <a href="mes_reservations_etudiant.php">Mes Réservations</a>
-        <a href="reserver_salle_etudiant.php">Réserver une Salle</a>
-        <a href="reserver_materiel_etudiant.php">Réserver du Matériel</a>
-        <a href="disponibilites.php">Disponibilités</a>
-        <a href="notifications_etudiant.php">Notifications</a>
-        <a href="mon_profil.php">Mon Profil</a>
-        <a href="logout.php">Déconnexion</a>
+    <nav class="nav-container">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
+            <div class="nav-menu">
+                <a href="student.php" class="active">Accueil</a>
+                <a href="reservation_salle.php">Réservations</a>
+                <a href="#">Mon Compte</a>
+            </div>
+        </div>
+        <div class="profile-menu">
+            <img src="../img/profil.png" alt="Profile" class="profile-icon">
+            <a href="../logout.php" class="logout-btn">Déconnexion</a>
+        </div>
     </nav>
 
     <div class="main-content">
         <h1>Bonjour, <?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?> !</h1>
-        <h2>Espace Étudiant</h2>
         <div class="course-cards">
-            <a href="reservation_salle.php" class="course-card" style="text-decoration:none;color:inherit;">
-                <img src="../img/emplacement.png" alt="Réserver une salle">
+            <a href="reservation_salle.php" class="course-card">
+                <div class="icon-container">
+                    <img src="../img/emplacement.png" alt="Réserver une salle">
+                </div>
                 <h3>Réserver une Salle</h3>
-                <p>Réservez une salle pour vos travaux de groupe ou études personnelles.</p>
+                <p>Réservez une salle pour vos travaux</p>
             </a>
-            <a href="reservation_materiel.php" class="course-card" style="text-decoration:none;color:inherit;">
-                <img src="../img/cadenas-verrouille.png" alt="Réserver du matériel">
+            <a href="reservation_materiel.php" class="course-card">
+                <div class="icon-container">
+                    <img src="../img/cadenas-verrouille.png" alt="Réserver du matériel">
+                </div>
                 <h3>Réserver du Matériel</h3>
-                <p>Empruntez le matériel nécessaire pour vos projets et présentations.</p>
+                <p>Empruntez le matériel nécessaire</p>
             </a>
             <div class="course-card">
-                <img src="../img/nom.png" alt="Mes réservations">
+                <div class="icon-container">
+                    <img src="../img/nom.png" alt="Mes réservations">
+                </div>
                 <h3>Mes Réservations</h3>
-                <p>Consultez et gérez vos réservations en cours.</p>
+                <p>Consultez vos réservations</p>
             </div>
             <div class="course-card">
-                <img src="../img/profil.png" alt="Disponibilités">
+                <div class="icon-container">
+                    <img src="../img/profil.png" alt="Disponibilités">
+                </div>
                 <h3>Disponibilités</h3>
-                <p>Consultez les disponibilités des salles et du matériel en temps réel.</p>
+                <p>Voir les disponibilités</p>
             </div>
         </div>
     </div>
 
     <footer>
-        <p>&copy; 2025 Université Eiffel. Tous droits réservés.</p>
+        <p>&copy; 2025 Université Eiffel</p>
     </footer>
 </body>
 </html>
