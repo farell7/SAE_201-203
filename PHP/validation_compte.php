@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
     echo json_encode(['error' => 'Accès non autorisé']);
     exit();
-}*/
+}
 
 require 'connexion.php';
 
