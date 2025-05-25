@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Définir le chemin de base
+define('BASE_PATH', '/SAE_201-203');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_POST['password'])) {
     require_once 'PHP/config.php';
     
@@ -8,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_P
     $password = $_POST['password'];
     
     try {
-        $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email = ?");
+        $stmt = $conn->prepare("SELECT * FROM utilisateur WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -23,30 +26,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_P
             
             switch($user['role']) {
                 case 'admin':
-                    header('Location: PHP/admin.php');
+                    header('Location: ' . BASE_PATH . '/PHP/admin.php');
                     break;
                 case 'teacher':
-                    header('Location: PHP/teacher.php');
+                    header('Location: ' . BASE_PATH . '/PHP/teacher.php');
                     break;
                 case 'agent':
-                    header('Location: PHP/agent.php');
+                    header('Location: ' . BASE_PATH . '/PHP/agent.php');
                     break;
                 case 'student':
-                    header('Location: PHP/student.php');
+                    header('Location: ' . BASE_PATH . '/PHP/student.php');
                     break;
                 default:
                     $_SESSION['error'] = 'invalid_role';
-                    header('Location: index.php');
+                    header('Location: ' . BASE_PATH . '/index.php');
             }
             exit();
         } else {
             $_SESSION['error'] = 'invalid_credentials';
-            header('Location: index.php');
+            header('Location: ' . BASE_PATH . '/index.php');
             exit();
         }
     } catch(PDOException $e) {
         $_SESSION['error'] = 'database_error';
-        header('Location: index.php');
+        header('Location: ' . BASE_PATH . '/index.php');
         exit();
     }
 }
@@ -55,19 +58,19 @@ if (isset($_SESSION['utilisateur'])) {
     $role = $_SESSION['utilisateur']['role'];
     switch($role) {
         case 'admin':
-            header('Location: PHP/admin.php');
+            header('Location: ' . BASE_PATH . '/PHP/admin.php');
             break;
         case 'teacher':
-            header('Location: PHP/teacher.php');
+            header('Location: ' . BASE_PATH . '/PHP/teacher.php');
             break;
         case 'agent':
-            header('Location: PHP/agent.php');
+            header('Location: ' . BASE_PATH . '/PHP/agent.php');
             break;
         case 'student':
-            header('Location: PHP/student.php');
+            header('Location: ' . BASE_PATH . '/PHP/student.php');
             break;
         default:
-            header('Location: index.php');
+            header('Location: ' . BASE_PATH . '/index.php');
     }
     exit();
 }

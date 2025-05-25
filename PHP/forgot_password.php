@@ -2,6 +2,11 @@
 session_start();
 require_once 'config.php';
 
+// Définir le chemin de base s'il n'est pas déjà défini
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', '/SAE_201-203');
+}
+
 $message = '';
 $messageType = '';
 
@@ -27,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$token, $expiry, $email]);
                 
                 // Envoyer l'email (simulation)
-                $resetLink = "http://localhost/SAE_201-203/PHP/reset_password.php?token=" . $token;
+                $resetLink = "http://" . $_SERVER['HTTP_HOST'] . BASE_PATH . "/PHP/reset_password.php?token=" . $token;
                 
                 $message = "Si cette adresse email existe dans notre base de données, vous recevrez un lien de réinitialisation.<br>
                           Pour cette démo, voici le lien : <a href='$resetLink'>Réinitialiser le mot de passe</a>";
@@ -50,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mot de passe oublié - ResaUGE</title>
-    <link rel="stylesheet" href="../CSS/styleindex.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>/CSS/styleindex.css">
     <style>
         .container {
             max-width: 400px;
@@ -114,13 +119,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
         
-        <form method="POST" action="forgot_password.php">
+        <form method="POST" action="<?php echo BASE_PATH; ?>/PHP/forgot_password.php">
             <input type="email" name="email" placeholder="Votre adresse email" required>
             <button type="submit">Réinitialiser le mot de passe</button>
         </form>
         
         <div class="back-link">
-            <a href="../index.php">Retour à la connexion</a>
+            <a href="<?php echo BASE_PATH; ?>/index.php">Retour à la connexion</a>
         </div>
     </div>
 </body>

@@ -2,6 +2,11 @@
 session_start();
 require_once 'config.php';
 
+// Définir le chemin de base s'il n'est pas déjà défini
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', '/SAE_201-203');
+}
+
 $message = '';
 $messageType = '';
 $validToken = false;
@@ -43,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token']) && isset($_P
             
             $message = "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.";
             $messageType = 'success';
-            header("refresh:3;url=../index.php"); // Redirection après 3 secondes
+            header("refresh:3;url=" . BASE_PATH . "/index.php"); // Redirection après 3 secondes
         } else {
             $message = "Ce lien de réinitialisation est invalide ou a expiré.";
             $messageType = 'error';
@@ -60,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token']) && isset($_P
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Réinitialisation du mot de passe - ResaUGE</title>
-    <link rel="stylesheet" href="../CSS/styleindex.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>/CSS/styleindex.css">
     <style>
         .container {
             max-width: 400px;
@@ -121,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token']) && isset($_P
         <?php endif; ?>
         
         <?php if ($validToken): ?>
-            <form method="POST" action="reset_password.php">
+            <form method="POST" action="<?php echo BASE_PATH; ?>/PHP/reset_password.php">
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
                 <input type="password" name="password" placeholder="Nouveau mot de passe" required minlength="6">
                 <input type="password" name="password_confirm" placeholder="Confirmez le mot de passe" required minlength="6">
@@ -130,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token']) && isset($_P
         <?php endif; ?>
         
         <div class="back-link">
-            <a href="../index.php">Retour à la connexion</a>
+            <a href="<?php echo BASE_PATH; ?>/index.php">Retour à la connexion</a>
         </div>
     </div>
     
