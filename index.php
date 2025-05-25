@@ -101,6 +101,8 @@ unset($_SESSION['error']);
                 <select name="role" id="register-role" required>
                     <option value="student">Etudiant</option>
                     <option value="teacher">Enseignant</option>
+                    <option value="agent">Agent</option>
+                    <option value="admin">Administrateur</option>
                 </select>
                 <button type="submit">S'inscrire</button>
             </form>

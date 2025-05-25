@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS utilisateur (
     email VARCHAR(255) NOT NULL UNIQUE,
     mot_de_passe VARCHAR(255) NOT NULL,
     role ENUM('student', 'teacher', 'agent', 'admin') NOT NULL,
+    reset_token VARCHAR(64) DEFAULT NULL,
+    reset_expiry DATETIME DEFAULT NULL,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -68,6 +70,7 @@ CREATE TABLE IF NOT EXISTS reservation_materiel (
 -- Ajout d'index pour améliorer les performances
 CREATE INDEX idx_user_email ON utilisateur(email);
 CREATE INDEX idx_user_role ON utilisateur(role);
+CREATE INDEX idx_user_reset_token ON utilisateur(reset_token);
 CREATE INDEX idx_reservation_dates ON reservation(date_debut, date_fin);
 CREATE INDEX idx_reservation_statut ON reservation(statut);
 CREATE INDEX idx_materiel_type ON materiel(type);
