@@ -1,45 +1,13 @@
 <?php
 session_start();
-// Temporairement commenté pour permettre l'accès direct
-/*if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'admin') {
-    header('Location: ../index.php');
-    exit();
-}*/
-
-require 'connexion.php';
-
-$stmt = $pdo->query("SELECT * FROM utilisateur ORDER BY valide ASC, id DESC");
-$users = $stmt->fetchAll();
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['user_id'])) {
-    $userId = (int)$_POST['user_id'];
-    $action = $_POST['action'];
-    
-    $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE id = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch();
-    
-    if ($user) {
-        if ($action === 'validate') {
-            $stmt = $pdo->prepare("UPDATE utilisateur SET valide = 1 WHERE id = ?");
-            $stmt->execute([$userId]);
-        } elseif ($action === 'reject') {
-            $stmt = $pdo->prepare("UPDATE utilisateur SET valide = 0 WHERE id = ?");
-            $stmt->execute([$userId]);
-        }
-    }
-    
-    header('Location: ' . $_SERVER['PHP_SELF']);
-    exit;
-}
+$username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Administrateur';
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validation des Comptes - Admin</title>
+    <title>Gestion des Utilisateurs - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,6 +55,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
             box-shadow: 0 .5rem 1rem rgba(47, 42, 133, 0.15);
         }
 
+        .btn-custom {
+            background-color: #2f2a85;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: #27236e;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            background-color: #2f2a85;
+            color: #ffffff;
+        }
+
         .table {
             background-color: #ffffff;
             border-radius: 0.5rem;
@@ -104,44 +89,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
             background-color: rgba(47, 42, 133, 0.05);
         }
 
-        .btn-approve {
+        .btn-edit {
             background-color: #35c8b0;
             color: #ffffff;
         }
 
-        .btn-approve:hover {
+        .btn-edit:hover {
             background-color: #2ca892;
             color: #ffffff;
         }
 
-        .btn-reject {
+        .btn-delete {
             background-color: #ca3120;
             color: #ffffff;
         }
 
-        .btn-reject:hover {
+        .btn-delete:hover {
             background-color: #a82718;
             color: #ffffff;
-        }
-
-        .footer {
-            background-color: #2f2a85;
-            color: #ffffff;
-        }
-
-        .badge-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .badge-approved {
-            background-color: #35c8b0;
-            color: #fff;
-        }
-
-        .badge-rejected {
-            background-color: #ca3120;
-            color: #fff;
         }
     </style>
 </head>
@@ -159,10 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
                         <a class="nav-link d-flex align-items-center" href="dashboard_admin.php">
                             <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
                         </a>
-                        <a class="nav-link d-flex align-items-center active" href="validation_compte.php">
+                        <a class="nav-link d-flex align-items-center" href="validation_compte.php">
                             <i class="bi bi-person-check me-2"></i>Validation des utilisateurs
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="gestion_utilisateurs.php">
+                        <a class="nav-link d-flex align-items-center active" href="gestion_utilisateurs.php">
                             <i class="bi bi-people me-2"></i>Utilisateurs
                         </a>
                         <a class="nav-link d-flex align-items-center" href="suivi_admin.php">
@@ -184,8 +149,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
             <!-- Main content -->
             <main class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
                 <div class="container">
-                    <h1 class="display-5 fw-bold mb-2">Validation des Comptes</h1>
-                    <p class="text-muted fs-4 mb-5">Gestion des demandes d'inscription</p>
+                    <h1 class="display-5 fw-bold mb-2">Gestion des Utilisateurs</h1>
+                    <p class="text-muted fs-4 mb-5">Administration des comptes utilisateurs</p>
 
                     <div class="card shadow-sm mb-4">
                         <div class="card-body">
@@ -195,18 +160,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
                                         <span class="input-group-text bg-white border-end-0">
                                             <i class="bi bi-search"></i>
                                         </span>
-                                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Rechercher une demande...">
+                                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Rechercher un utilisateur...">
                                     </div>
                                 </div>
-                                <div class="col-md-4 text-md-end">
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-outline-secondary">
-                                            <i class="bi bi-funnel me-2"></i>Filtrer
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary">
-                                            <i class="bi bi-sort-down me-2"></i>Trier
-                                        </button>
-                                    </div>
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                    <button class="btn btn-custom">
+                                        <i class="bi bi-plus-lg me-2"></i>Ajouter un utilisateur
+                                    </button>
                                 </div>
                             </div>
 
@@ -216,85 +176,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
                                         <tr>
                                             <th>Nom</th>
                                             <th>Email</th>
-                                            <th>Type de compte</th>
-                                            <th>Date de demande</th>
+                                            <th>Rôle</th>
                                             <th>Statut</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Pierre Martin</td>
-                                            <td>pierre.martin@example.com</td>
+                                            <td>Jean Dupont</td>
+                                            <td>jean.dupont@example.com</td>
                                             <td>
                                                 <span class="badge bg-primary">Enseignant</span>
                                             </td>
-                                            <td>2024-03-15</td>
                                             <td>
-                                                <span class="badge badge-pending">En attente</span>
+                                                <span class="badge bg-success">Actif</span>
                                             </td>
                                             <td>
-                                                <button class="btn btn-approve btn-sm me-2">
-                                                    <i class="bi bi-check-lg me-1"></i>Approuver
+                                                <button class="btn btn-edit btn-sm me-2">
+                                                    <i class="bi bi-pencil-square me-1"></i>Modifier
                                                 </button>
-                                                <button class="btn btn-reject btn-sm">
-                                                    <i class="bi bi-x-lg me-1"></i>Rejeter
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Sophie Bernard</td>
-                                            <td>sophie.bernard@example.com</td>
-                                            <td>
-                                                <span class="badge bg-info">Étudiant</span>
-                                            </td>
-                                            <td>2024-03-14</td>
-                                            <td>
-                                                <span class="badge badge-approved">Approuvé</span>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                    <i class="bi bi-check-lg me-1"></i>Approuvé
+                                                <button class="btn btn-delete btn-sm">
+                                                    <i class="bi bi-trash me-1"></i>Supprimer
                                                 </button>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Lucas Dubois</td>
-                                            <td>lucas.dubois@example.com</td>
+                                            <td>Marie Martin</td>
+                                            <td>marie.martin@example.com</td>
                                             <td>
                                                 <span class="badge bg-info">Étudiant</span>
                                             </td>
-                                            <td>2024-03-14</td>
                                             <td>
-                                                <span class="badge badge-rejected">Rejeté</span>
+                                                <span class="badge bg-success">Actif</span>
                                             </td>
                                             <td>
-                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                    <i class="bi bi-x-lg me-1"></i>Rejeté
+                                                <button class="btn btn-edit btn-sm me-2">
+                                                    <i class="bi bi-pencil-square me-1"></i>Modifier
+                                                </button>
+                                                <button class="btn btn-delete btn-sm">
+                                                    <i class="bi bi-trash me-1"></i>Supprimer
                                                 </button>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center mt-4">
-                                <div class="text-muted">
-                                    Affichage de <strong>1-3</strong> sur <strong>25</strong> demandes
-                                </div>
-                                <nav aria-label="Page navigation">
-                                    <ul class="pagination mb-0">
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                                        </li>
-                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">Suivant</a>
-                                        </li>
-                                    </ul>
-                                </nav>
                             </div>
                         </div>
                     </div>
@@ -311,4 +236,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html> 
