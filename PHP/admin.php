@@ -1,162 +1,189 @@
 <?php
-session_start();
-// Supposons que le nom d'utilisateur est stocké dans $_SESSION['username']//
-$username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Administrateur';
+require_once 'check_session.php';
+$user = checkSession('admin');
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Université Eiffel</title>
-    <link rel="stylesheet" href="/CSS/styleadmin.Css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>Espace Administrateur - ResaUGE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #2f2a85;
+            --dark-color: #1d2125;
+            --light-color: #ffffff;
+            --gray-color: #e9ecef;
+            --secondary-gray: #8f959e;
+        }
+
         body {
             font-family: 'Montserrat', Arial, sans-serif;
-            background:rgb(242, 245, 250);
-            margin: 0;
-            display: flex;
             min-height: 100vh;
+            display: flex;
         }
+
         .sidebar {
-            width: 240px;
-            background:rgb(29, 37, 126);
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            padding: 30px 0;
+            background-color: var(--primary-color);
+            width: 280px;
+            padding: 2rem 0;
             min-height: 100vh;
         }
+
         .sidebar h2 {
+            color: var(--light-color);
             text-align: center;
-            margin-bottom: 40px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            margin-bottom: 2rem;
         }
-        .sidebar nav a {
-            color: #fff;
-            text-decoration: none;
-            padding: 15px 30px;
-            display: block;
-            transition: background 0.2s;
-            font-size: 1.1em;
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.8rem 1.5rem;
+            transition: all 0.3s ease;
         }
-        .sidebar nav a:hover {
-            background: #3949ab;
+
+        .nav-link:hover {
+            color: var(--light-color);
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
         }
+
+        .nav-link i {
+            margin-right: 0.5rem;
+        }
+
         .main-content {
             flex: 1;
-            padding: 40px 60px;
+            padding: 2rem;
+            background-color: var(--gray-color);
         }
-        .welcome {
-            font-size: 2em;
-            font-weight: 700;
-            margin-bottom: 10px;
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        .subtitle {
-            color: #3949ab;
-            margin-bottom: 30px;
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
         }
-        .admin-cards {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
+
+        .card-img-top {
+            width: 64px;
+            height: 64px;
+            margin: 1.5rem auto;
         }
-        .admin-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(60,60,100,0.08);
-            padding: 30px 24px;
-            flex: 1 1 260px;
-            min-width: 260px;
-            max-width: 320px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.2s, box-shadow 0.2s;
+
+        .card-title {
+            color: var(--primary-color);
+            font-weight: 600;
         }
-        .admin-card:hover {
-            transform: translateY(-6px) scale(1.03);
-            box-shadow: 0 8px 24px rgba(60,60,100,0.15);
+
+        .card-text {
+            color: var(--secondary-gray);
         }
-        .admin-card img {
-            width: 65px;
-            height: 65px;
-            margin-bottom: 18px;
+
+        .btn-custom {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            transition: all 0.3s ease;
         }
-        .admin-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.2em;
-            color:rgb(29, 37, 126);
+
+        .btn-custom:hover {
+            background-color: #27236e;
+            color: var(--light-color);
+            transform: translateY(-2px);
         }
-        .admin-card p {
-            color: #555;
-            text-align: center;
-            font-size: 1em;
-        }
-        footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100vw;
-            background:rgb(30, 38, 122);
-            color: #fff;
-            text-align: center;
-            padding: 12px 0;
-            font-size: 0.95em;
-            letter-spacing: 1px;
-        }
-        @media (max-width: 900px) {
-            .main-content { padding: 20px 10px; }
-            .admin-cards { flex-direction: column; gap: 18px; }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <aside class="sidebar">
-        <h2>Admin</h2>
-        <nav>
-            <a href="#">Accueil</a>
-            <a href="#">Tableau de bord</a>
-            <a href="validation_compte.php">Validation des utilisateurs</a>
-            <a href="#">Utilisateurs</a>
-            <a href="#">Suivi</a>
-            <a href="#">Objets & Salles</a>
-            <a href="logout.php">Déconnexion</a>
+    <div class="sidebar">
+        <h2>Administration</h2>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="#"><i class="bi bi-house-door"></i>Accueil</a>
+            <a class="nav-link" href="dashboard_admin.php"><i class="bi bi-speedometer2"></i>Tableau de bord</a>
+            <a class="nav-link" href="validation_compte.php"><i class="bi bi-person-check"></i>Validation des utilisateurs</a>
+            <a class="nav-link" href="gestion_utilisateurs.php"><i class="bi bi-people"></i>Gestion des utilisateurs</a>
+            <a class="nav-link" href="suivi_admin.php"><i class="bi bi-graph-up"></i>Suivi</a>
+            <a class="nav-link" href="gestion_materiel.php"><i class="bi bi-tools"></i>Gestion du matériel</a>
+            <a class="nav-link" href="gestion_salle.php"><i class="bi bi-building"></i>Gestion des salles</a>
+            <a class="nav-link" href="gestion_reservations.php"><i class="bi bi-calendar-check"></i>Gestion des réservations</a>
+            <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i>Déconnexion</a>
         </nav>
-    </aside>
-    <main class="main-content">
-        <div class="welcome">Bonjour, <?php echo $username; ?> !</div>
-        <div class="subtitle">Espace d'administration</div>
-        <div class="admin-cards">
-            <div class="admin-card">
-                <img src="/img/emplacement.png" alt="Gestion des salles">
-                <h3>Gestion des salles</h3>
-                <p>Ajoutez, modifiez ou supprimez les salles de l'université. Consultez leur disponibilité en temps réel.</p>
-            </div>
-            <div class="admin-card">
-                <img src="/img/cadenas-verrouille.png" alt="Gestion du matériel">
-                <h3>Gestion du matériel</h3>
-                <p>Gérez le matériel disponible, attribuez-le aux salles ou utilisateurs, et suivez l'état des équipements.</p>
-            </div>
-            <div class="admin-card">
-                <img src="/img/profil.png" alt="Gestion des utilisateurs">
-                <h3>Gestion des utilisateurs</h3>
-                <p>Créez, modifiez ou supprimez des comptes utilisateurs. Attribuez des rôles et surveillez l'activité.</p>
-            </div>
-            <div class="admin-card">
-                <img src="/img/nom.png" alt="Suivi des réservations">
-                <h3>Suivi des réservations</h3>
-                <p>Visualisez et gérez toutes les réservations en cours ou passées. Exportez les rapports facilement.</p>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <h1 class="display-4 mb-4">Bonjour, <?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?></h1>
+            <p class="lead text-muted mb-5">Espace d'administration</p>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <img src="../img/emplacement.png" class="card-img-top" alt="Gestion des salles">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Gestion des salles</h5>
+                            <p class="card-text">Gérez les salles de l'université et leur disponibilité.</p>
+                            <a href="gestion_salle.php" class="btn btn-custom w-100">Gérer</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <img src="../img/cadenas-verrouille.png" class="card-img-top" alt="Gestion du matériel">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Gestion du matériel</h5>
+                            <p class="card-text">Gérez le matériel et les équipements disponibles.</p>
+                            <a href="gestion_materiel.php" class="btn btn-custom w-100">Gérer</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <img src="../img/profil.png" class="card-img-top" alt="Gestion des utilisateurs">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Gestion des utilisateurs</h5>
+                            <p class="card-text">Gérez les comptes utilisateurs et leurs droits.</p>
+                            <a href="gestion_utilisateurs.php" class="btn btn-custom w-100">Gérer</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <img src="../img/nom.png" class="card-img-top" alt="Suivi des réservations">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Suivi des réservations</h5>
+                            <p class="card-text">Consultez et gérez les réservations en cours.</p>
+                            <a href="gestion_reservations.php" class="btn btn-custom w-100">Gérer</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
-    <footer>
-        &copy;2025 Université Eiffel. Tous droits réservés.
-    </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

@@ -1,0 +1,29 @@
+Options +FollowSymLinks -MultiViews
+RewriteEngine On
+
+# Redirection vers HTTPS (décommenter si SSL est configuré)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Autoriser l'accès direct à index.php
+RewriteCond %{REQUEST_URI} ^/SAE_201-203/index\.php$ [OR]
+RewriteCond %{REQUEST_URI} ^/SAE_201-203/PHP/init_db\.php$
+RewriteRule ^ - [L]
+
+# Protection des fichiers de configuration
+<FilesMatch "^(config\.php|database\.sql)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Définir l'index par défaut
+DirectoryIndex index.php
+
+# Autoriser l'accès aux ressources statiques
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Empêcher la navigation dans les répertoires
+Options -Indexes 
