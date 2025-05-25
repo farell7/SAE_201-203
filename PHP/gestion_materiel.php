@@ -1,3 +1,4 @@
+<?php include 'gm.php'; ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>

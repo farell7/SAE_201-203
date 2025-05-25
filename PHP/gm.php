@@ -1,9 +1,17 @@
-<?php include 'gm.php'; ?>
 <?php
+// Suppression de l'auto-inclusion qui crée une boucle
+// include 'gm.php';
+
 session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+// Initialisation des variables globales
+$message = '';
+$messageType = '';
+$materiels = [];
+$reservations = [];
 
 // Connexion à la base de données
 $host = 'localhost';
@@ -43,8 +51,25 @@ try {
         FOREIGN KEY (materiel_id) REFERENCES materiel(id) ON DELETE CASCADE
     )");
 
+    // Récupération du matériel et des réservations
+    $materiels = $pdo->query("SELECT * FROM materiel ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Requête pour les réservations en attente
+    $sql = "SELECT r.id, r.materiel_id, r.user_id, r.date_debut, r.date_fin, 
+                   r.statut, r.commentaire, r.signature_admin, r.date_signature, r.created_at,
+                   m.nom as materiel_nom, m.type as materiel_type
+            FROM reservation_materiel r 
+            JOIN materiel m ON r.materiel_id = m.id
+            WHERE r.statut = 'en_attente'
+            ORDER BY r.created_at DESC";
+    
+    $reservations = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
-    die("Erreur de connexion : " . $e->getMessage());
+    $message = "Erreur de connexion : " . $e->getMessage();
+    $messageType = "error";
+    $materiels = [];
+    $reservations = [];
 }
 
 // Création du dossier uploads s'il n'existe pas
@@ -53,9 +78,22 @@ if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
-// Messages de retour pour l'utilisateur
-$message = '';
-$messageType = '';
+// Fonction pour uploader une image
+function uploadImage($inputName, $uploadDir) {
+    if (!empty($_FILES[$inputName]['name'])) {
+        $fileName = uniqid() . '_' . basename($_FILES[$inputName]['name']);
+        $targetPath = $uploadDir . '/' . $fileName;
+        
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        
+        if (move_uploaded_file($_FILES[$inputName]['tmp_name'], '../' . $targetPath)) {
+            return $targetPath;
+        }
+    }
+    return '';
+}
 
 // Traitement des actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -68,26 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $numero_serie = $_POST['numero_serie'] ?? '';
             $etat = $_POST['etat'] ?? 'bon';
             $disponible = isset($_POST['disponible']) ? 1 : 0;
-            $photo = '';
-
-            // Traitement de la photo
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                $tmpName = $_FILES['photo']['tmp_name'];
-                $fileName = uniqid() . '_' . $_FILES['photo']['name'];
-                $uploadFile = $uploadDir . '/' . $fileName;
-
-                // Vérifier le type de fichier
-                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-                $fileType = mime_content_type($tmpName);
-                
-                if (in_array($fileType, $allowedTypes)) {
-                    if (move_uploaded_file($tmpName, $uploadFile)) {
-                        $photo = 'uploads/materiel/' . $fileName;
-                    }
-                } else {
-                    throw new Exception("Type de fichier non autorisé. Utilisez JPG, PNG ou GIF.");
-                }
-            }
+            $photo = uploadImage('photo', $uploadDir);
 
             $sql = "INSERT INTO materiel (nom, type, description, numero_serie, etat, disponible, photo) 
                     VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -112,57 +131,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $numero_serie = $_POST['numero_serie'] ?? '';
             $etat = $_POST['etat'];
             $disponible = isset($_POST['disponible']) ? 1 : 0;
+            $photo = uploadImage('photo', $uploadDir);
 
             // Récupérer l'ancienne photo
             $stmt = $pdo->prepare("SELECT photo FROM materiel WHERE id = ?");
             $stmt->execute([$id]);
             $oldPhoto = $stmt->fetchColumn();
 
-            // Traitement de la nouvelle photo
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                $tmpName = $_FILES['photo']['tmp_name'];
-                $fileName = uniqid() . '_' . $_FILES['photo']['name'];
-                $uploadFile = $uploadDir . '/' . $fileName;
-
-                // Vérifier le type de fichier
-                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-                $fileType = mime_content_type($tmpName);
-                
-                if (in_array($fileType, $allowedTypes)) {
-                    if (move_uploaded_file($tmpName, $uploadFile)) {
-                        // Supprimer l'ancienne photo si elle existe
-                        if ($oldPhoto && file_exists("../" . $oldPhoto)) {
-                            unlink("../" . $oldPhoto);
-                        }
-                        $photo = 'uploads/materiel/' . $fileName;
-                        
-                        $sql = "UPDATE materiel SET 
-                                nom = ?, 
-                                type = ?, 
-                                description = ?, 
-                                numero_serie = ?,
-                                etat = ?,
-                                disponible = ?,
-                                photo = ?
-                                WHERE id = ?";
-                        $stmt = $pdo->prepare($sql);
-                        $stmt->execute([$nom, $type, $description, $numero_serie, $etat, $disponible, $photo, $id]);
-                    }
-                } else {
-                    throw new Exception("Type de fichier non autorisé. Utilisez JPG, PNG ou GIF.");
-                }
-            } else {
-                $sql = "UPDATE materiel SET 
-                        nom = ?, 
-                        type = ?, 
-                        description = ?, 
-                        numero_serie = ?,
-                        etat = ?,
-                        disponible = ?
-                        WHERE id = ?";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([$nom, $type, $description, $numero_serie, $etat, $disponible, $id]);
+            if ($oldPhoto && file_exists("../" . $oldPhoto)) {
+                unlink("../" . $oldPhoto);
             }
+
+            $sql = "UPDATE materiel SET 
+                    nom = ?, 
+                    type = ?, 
+                    description = ?, 
+                    numero_serie = ?,
+                    etat = ?,
+                    disponible = ?,
+                    photo = ?
+                    WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$nom, $type, $description, $numero_serie, $etat, $disponible, $photo, $id]);
 
             $message = "Le matériel a été modifié avec succès.";
             $messageType = "success";
@@ -316,27 +306,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $messageType = "error";
         }
     }
-}
-
-// Récupération du matériel et des réservations
-try {
-    $materiels = $pdo->query("SELECT * FROM materiel ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Requête pour les réservations en attente
-    $sql = "SELECT r.id, r.materiel_id, r.user_id, r.date_debut, r.date_fin, 
-                   r.statut, r.commentaire, r.signature_admin, r.date_signature, r.created_at,
-                   m.nom as materiel_nom, m.type as materiel_type
-            FROM reservation_materiel r 
-            JOIN materiel m ON r.materiel_id = m.id
-            WHERE r.statut = 'en_attente'
-            ORDER BY r.created_at DESC";
-    
-    $reservations = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    $message = "Erreur lors de la récupération des données : " . $e->getMessage();
-    $messageType = "error";
-    $materiels = [];
-    $reservations = [];
 }
 ?>
