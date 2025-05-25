@@ -11,8 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_P
     $password = $_POST['password'];
     
     try {
-<<<<<<< HEAD
-        $stmt = $connexion->prepare("SELECT * FROM utilisateur WHERE email = ?");
 =======
         $stmt = $conn->prepare("SELECT * FROM utilisateur WHERE email = ?");
 >>>>>>> e31f9708bd2b7e4de0b12dfb97b4e10ec52c226a
@@ -42,18 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_P
                     header('Location: ' . BASE_PATH . '/PHP/student.php');
                     break;
                 default:
-<<<<<<< HEAD
-                    $_SESSION['error'] = 'Rôle utilisateur invalide';
-                    header('Location: index.php');
-            }
-            exit();
-        } else {
-            $_SESSION['error'] = 'Email ou mot de passe incorrect';
-            header('Location: index.php');
-            exit();
-        }
-    } catch(PDOException $e) {
-        $_SESSION['error'] = 'Erreur de connexion à la base de données';
+
         header('Location: index.php');
 =======
                     $_SESSION['error'] = 'invalid_role';

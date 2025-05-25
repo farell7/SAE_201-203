@@ -1,4 +1,3 @@
-<?php include 'gestion_materiel.php'; ?>
 <?php
 session_start();
 ini_set('display_errors', 1);
