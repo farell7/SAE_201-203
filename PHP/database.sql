@@ -154,8 +154,8 @@ INSERT INTO `materiel` VALUES
 (10,'gopro','gopro','gopro','gopro','bon','uploads/materiel/683472b250781_gopro.jpg',1,'2025-05-26 13:54:58'),
 (11,'gopro','lol','non','123156','bon','uploads/materiel/6834734a713dd_drone.JPG',1,'2025-05-26 13:57:30');
 
-INSERT INTO `salle` VALUES 
-(8,'Salle 212',2,'',NULL,1,'uploads/salles/683478d0339f6.jpg','non',NULL,'2025-05-26 14:21:04');
+INSERT INTO `salle` (`id`, `nom`, `capacite`, `type`, `equipements`, `disponible`, `photo`, `description`, `created_at`) VALUES 
+(8,'Salle 212',2,'standard',NULL,1,'uploads/salles/683478d0339f6.jpg','non','2025-05-26 14:21:04');
 
 INSERT INTO `reservation_materiel` VALUES 
 (1,10,1,'2025-05-27 16:00:00','2025-05-27 18:00:00','validee','','farel','2025-05-26 16:19:06','2025-05-26 14:17:59'),
