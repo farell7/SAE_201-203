@@ -15,8 +15,9 @@ include 'vc.php';
     <nav>
         <div class="nav-left">
             <a href="#" class="logo">Logo ResaUGE</a>
-            <a href="admin_dashboard.php">Accueil</a>
-            <a href="gestion_salles.php">Salles</a>
+            <a href="admin.php">Accueil</a>
+            <a href="reservation_salle.php">Salles</a>
+            <a href="reservation_materiel.php">Matériel</a>
             <a href="validation_compte.php" class="active">Utilisateurs</a>
             <a href="statistiques.php">Statistiques</a>
         </div>
@@ -51,14 +52,30 @@ include 'vc.php';
                         <td><?= htmlspecialchars($user['role']) ?></td>
                         <td><?= date('d/m/Y H:i', strtotime($user['date_creation'])) ?></td>
                         <td>
-                            <span class="status <?= $user['valide'] ? 'status-validated' : 'status-pending' ?>">
-                                <?= $user['valide'] ? 'Validé' : 'En attente' ?>
+                            <span class="status 
+                                <?php 
+                                switch($user['compte_valide']) {
+                                    case 0: echo 'status-pending'; break;
+                                    case 1: echo 'status-validated'; break;
+                                    case 2: echo 'status-refused'; break;
+                                }
+                                ?>">
+                                <?php 
+                                switch($user['compte_valide']) {
+                                    case 0: echo 'En attente'; break;
+                                    case 1: echo 'Validé'; break;
+                                    case 2: echo 'Refusé'; break;
+                                }
+                                ?>
                             </span>
                         </td>
                         <td>
-                            <?php if (!$user['valide']): ?>
+                            <?php if ($user['compte_valide'] == 0): ?>
                             <button class="action-btn validate-btn" onclick="validerCompte(<?= $user['id'] ?>)">
                                 Valider
+                            </button>
+                            <button class="action-btn refuse-btn" onclick="refuserCompte(<?= $user['id'] ?>)">
+                                Refuser
                             </button>
                             <?php endif; ?>
                             <button class="action-btn delete-btn" onclick="supprimerCompte(<?= $user['id'] ?>)">
@@ -96,49 +113,62 @@ include 'vc.php';
     <script>
     function validerCompte(userId) {
         if (confirm('Voulez-vous vraiment valider ce compte ?')) {
-            fetch('validation_compte.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    userId: userId,
-                    action: 'valider'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Erreur lors de la validation du compte');
-                }
-            });
+            sendRequest(userId, 'valider');
+        }
+    }
+
+    function refuserCompte(userId) {
+        if (confirm('Voulez-vous vraiment refuser ce compte ?')) {
+            sendRequest(userId, 'refuser');
         }
     }
 
     function supprimerCompte(userId) {
         if (confirm('Voulez-vous vraiment supprimer ce compte ?')) {
-            fetch('validation_compte.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    userId: userId,
-                    action: 'supprimer'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Erreur lors de la suppression du compte');
-                }
-            });
+            sendRequest(userId, 'supprimer');
         }
     }
+
+    function sendRequest(userId, action) {
+        fetch('validation_compte.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                userId: userId,
+                action: action
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de l\'opération : ' + (data.message || 'Erreur inconnue'));
+            }
+        });
+    }
     </script>
+
+    <style>
+    .status-refused {
+        background-color: #ffebee;
+        color: #c62828;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    .refuse-btn {
+        background-color: #ff5252;
+        color: white;
+        margin: 0 5px;
+    }
+
+    .refuse-btn:hover {
+        background-color: #c62828;
+    }
+    </style>
 </body>
 </html>

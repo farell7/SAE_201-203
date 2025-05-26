@@ -29,58 +29,68 @@ body {
 }
 
 /* Navigation */
-.nav-container {
+nav {
+    background-color: #2f2a85;
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    background-color: var(--nav-bg-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
 }
 
-.logo {
-    height: 40px;
-}
-
-.nav-menu {
-    display: flex;
-    gap: 2rem;
-}
-
-.nav-menu a {
-    text-decoration: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-}
-
-.nav-menu a.active {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.profile-menu {
+.nav-left {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+.nav-left a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+}
+
+.nav-left a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-right span {
+    color: white;
+}
+
+.nav-right a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+}
+
+.nav-right a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.user-menu {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
 }
 
 .profile-icon {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    cursor: pointer;
 }
 
 .menu-icon {
+    color: white;
     font-size: 1.5rem;
     cursor: pointer;
-    color: white;
 }
 
 /* Contenu principal */
@@ -794,8 +804,4 @@ td.actions {
 
 .status-refusee {
     color: #dc3545;
-}
-
-.status-annulee {
-    color: #6c757d;
 } 

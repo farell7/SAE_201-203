@@ -1,27 +1,35 @@
 <?php
-session_start();
-$username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Administrateur';
+require_once 'check_session.php';
+$user = $_SESSION['utilisateur'];
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suivi - Admin</title>
+    <title>Suivi des Activités - ResaUGE</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #2f2a85;
+            --dark-color: #1d2125;
+            --light-color: #ffffff;
+        }
+
         body {
             font-family: 'Montserrat', Arial, sans-serif;
             min-height: 100vh;
-            background-color: #f8f9fa;
+            display: flex;
         }
 
         .sidebar {
-            background-color: #2f2a85;
+            background-color: var(--primary-color);
+            width: 280px;
+            padding: 2rem 0;
             min-height: 100vh;
         }
 
@@ -32,9 +40,8 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
         }
 
         .nav-link:hover {
-            color: #ffffff;
+            color: var(--light-color);
             background-color: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
         }
 
         .nav-link i {
@@ -45,49 +52,27 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
             transform: translateX(3px);
         }
 
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
         .card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: none;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 .5rem 1rem rgba(47, 42, 133, 0.15);
+            border-radius: 10px;
+            margin-bottom: 1rem;
         }
 
-        .activity-item {
-            transition: all 0.3s ease;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            padding: 1rem 0;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-item:hover {
-            background-color: rgba(47, 42, 133, 0.05);
-            padding-left: 1rem;
-        }
-
-        .status-indicator {
+        .status-dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
             display: inline-block;
+            margin-right: 8px;
         }
 
-        .status-success {
-            background-color: #35c8b0;
-        }
-
-        .status-warning {
-            background-color: #ffc107;
-        }
-
-        .status-error {
-            background-color: #ca3120;
-        }
+        .status-success { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-danger { background-color: #dc3545; }
 
         .footer {
             background-color: #2f2a85;
@@ -110,23 +95,17 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
                         <a class="nav-link d-flex align-items-center" href="admin.php">
                             <i class="bi bi-house-door me-2"></i>Accueil
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="dashboard_admin.php">
-                            <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
-                        </a>
                         <a class="nav-link d-flex align-items-center" href="validation_compte.php">
                             <i class="bi bi-person-check me-2"></i>Validation des utilisateurs
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="gestion_utilisateurs.php">
-                            <i class="bi bi-people me-2"></i>Utilisateurs
+                        <a class="nav-link d-flex align-items-center" href="gestion_materiel.php">
+                            <i class="bi bi-tools me-2"></i>Gestion du matériel
                         </a>
-                        <a class="nav-link d-flex align-items-center active" href="suivi_admin.php">
-                            <i class="bi bi-graph-up me-2"></i>Suivi
+                        <a class="nav-link d-flex align-items-center" href="gestion_salle.php">
+                            <i class="bi bi-building me-2"></i>Gestion des salles
                         </a>
-                        <a class="nav-link d-flex align-items-center" href="gestion_objets_salles.php">
-                            <i class="bi bi-building me-2"></i>Objets & Salles
-                        </a>
-                        <a class="nav-link d-flex align-items-center" href="gestion_reservations.php">
-                            <i class="bi bi-calendar-check me-2"></i>Gestion des réservations
+                        <a class="nav-link d-flex align-items-center" href="suivi_reservations.php">
+                            <i class="bi bi-calendar-check me-2"></i>Suivi des réservations
                         </a>
                         <a class="nav-link d-flex align-items-center" href="logout.php">
                             <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
@@ -143,92 +122,70 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
 
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <div class="card shadow-sm h-100">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Activités Récentes</h5>
+                                </div>
                                 <div class="card-body">
-                                    <h5 class="card-title mb-4">
-                                        <i class="bi bi-clock-history me-2"></i>Activités Récentes
-                                    </h5>
-                                    <div class="activity-list">
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-success me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Réservation confirmée - Salle A101</div>
-                                                <small class="text-muted">Il y a 5 minutes</small>
-                                            </div>
-                                        </div>
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-warning me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Maintenance programmée - Amphi B</div>
-                                                <small class="text-muted">Il y a 15 minutes</small>
-                                            </div>
-                                        </div>
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-error me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Problème technique signalé - Salle C203</div>
-                                                <small class="text-muted">Il y a 30 minutes</small>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-success"></span>
+                                        <strong>Réservation confirmée - Salle A101</strong>
+                                        <small class="text-muted d-block">Il y a 5 minutes</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-warning"></span>
+                                        <strong>Maintenance programmée - Amphi B</strong>
+                                        <small class="text-muted d-block">Il y a 15 minutes</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-danger"></span>
+                                        <strong>Problème technique signalé - Salle C203</strong>
+                                        <small class="text-muted d-block">Il y a 30 minutes</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-md-4">
-                            <div class="card shadow-sm h-100">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">État des Équipements</h5>
+                                </div>
                                 <div class="card-body">
-                                    <h5 class="card-title mb-4">
-                                        <i class="bi bi-tools me-2"></i>État des Équipements
-                                    </h5>
-                                    <div class="activity-list">
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-success me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Projecteurs</div>
-                                                <small class="text-muted">15/15 opérationnels</small>
-                                            </div>
-                                        </div>
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-warning me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Ordinateurs</div>
-                                                <small class="text-muted">28/30 opérationnels</small>
-                                            </div>
-                                        </div>
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-success me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Systèmes audio</div>
-                                                <small class="text-muted">10/10 opérationnels</small>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-success"></span>
+                                        <strong>Projecteurs</strong>
+                                        <small class="text-muted d-block">15/15 opérationnels</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-warning"></span>
+                                        <strong>Ordinateurs</strong>
+                                        <small class="text-muted d-block">28/30 opérationnels</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-success"></span>
+                                        <strong>Systèmes audio</strong>
+                                        <small class="text-muted d-block">10/10 opérationnels</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-md-4">
-                            <div class="card shadow-sm h-100">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Alertes Système</h5>
+                                </div>
                                 <div class="card-body">
-                                    <h5 class="card-title mb-4">
-                                        <i class="bi bi-exclamation-triangle me-2"></i>Alertes Système
-                                    </h5>
-                                    <div class="activity-list">
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-error me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Maintenance requise - Projecteur Salle D102</div>
-                                                <small class="text-muted">Priorité haute</small>
-                                            </div>
-                                        </div>
-                                        <div class="activity-item d-flex align-items-center">
-                                            <span class="status-indicator status-warning me-3"></span>
-                                            <div class="flex-grow-1">
-                                                <div class="fw-bold">Mise à jour système nécessaire</div>
-                                                <small class="text-muted">Priorité moyenne</small>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-danger"></span>
+                                        <strong>Maintenance requise - Projecteur Salle D102</strong>
+                                        <small class="text-muted d-block">Priorité haute</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="status-dot status-warning"></span>
+                                        <strong>Mise à jour système nécessaire</strong>
+                                        <small class="text-muted d-block">Priorité moyenne</small>
                                     </div>
                                 </div>
                             </div>
@@ -237,11 +194,11 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
 
                     <div class="row mt-4">
                         <div class="col-12">
-                            <div class="card shadow-sm">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Analyse des Tendances</h5>
+                                </div>
                                 <div class="card-body">
-                                    <h5 class="card-title mb-4">
-                                        <i class="bi bi-graph-up me-2"></i>Analyse des Tendances
-                                    </h5>
                                     <div class="chart-container">
                                         <!-- Ici vous pourrez ajouter un graphique pour les tendances -->
                                     </div>

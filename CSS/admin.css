@@ -1,0 +1,146 @@
+:root {
+    --primary-color: #2f2a85;
+    --dark-color: #1d2125;
+    --light-color: #ffffff;
+    --gray-color: #e9ecef;
+    --secondary-gray: #8f959e;
+}
+
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    margin: 0;
+    background-color: var(--gray-color);
+}
+
+.menu-lateral {
+    width: 250px;
+    background-color: var(--primary-color);
+    padding: 20px 0;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.menu-lateral h2 {
+    color: var(--light-color);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.5em;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--light-color);
+    transform: translateX(5px);
+}
+
+.menu-item i {
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+}
+
+.menu-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-left: 4px solid white;
+    color: var(--light-color);
+}
+
+.accueil {
+    margin-left: 250px;
+    padding: 30px;
+    width: calc(100% - 250px);
+}
+
+.accueil h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 2.5em;
+}
+
+.accueil .lead {
+    color: var(--secondary-gray);
+    margin-bottom: 40px;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    background: white;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+}
+
+.card-img-top {
+    width: 64px;
+    height: 64px;
+    margin: 1.5rem auto;
+}
+
+.card-title {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.card-text {
+    color: var(--secondary-gray);
+}
+
+.btn-custom {
+    background-color: var(--primary-color);
+    color: var(--light-color);
+    transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+    background-color: #27236e;
+    color: var(--light-color);
+    transform: translateY(-2px);
+}
+
+.footer {
+    background-color: var(--primary-color);
+    color: var(--light-color);
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
+
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .menu-lateral {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .accueil {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .footer {
+        margin-left: 0;
+        width: 100%;
+    }
+} 

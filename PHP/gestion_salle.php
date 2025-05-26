@@ -5,9 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Salles - Admin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/gestion_salle.css">
     <!-- FullCalendar CSS -->
     <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/main.min.css' rel='stylesheet' />
@@ -20,18 +18,68 @@
     <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.10/main.min.js'></script>
 </head>
 <body>
-    <nav class="nav-container">
-        <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
-        <div class="nav-menu">
-            <a href="#">Tableau de bord</a>
-            <a href="#" class="active">Gestions</a>
-            <a href="#">Suivi</a>
+    <nav>
+        <div class="nav-left">
+            <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
+            <a href="admin.php" class="active">Accueil</a>
+            <a href="reservation_salle.php" class="active">Salles</a>
+            <a href="reservation_materiel.php" class="active">Matériel</a>
+            <a href="validation_compte.php" class="active">Utilisateurs</a>
+            <a href="statistiques.php">Statistiques</a>
         </div>
-        <div class="profile-menu">
-            <img src="../img/profil.png" alt="Profile" class="profile-icon">
-            <div class="menu-icon">☰</div>
+        <div class="nav-right">
+            <span>admin admin</span>
+            <a href="../logout.php">Déconnexion</a>
         </div>
     </nav>
+
+    <style>
+    nav {
+        background-color: #2f2a85;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav-left a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+    }
+
+    .nav-left a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav-right span {
+        color: white;
+    }
+
+    .nav-right a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+    }
+
+    .nav-right a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    </style>
 
     <main class="main-content">
         <h1>Gestion des Salles</h1>
@@ -87,6 +135,7 @@
                             <form method="POST" style="display: inline;">
                                 <input type="hidden" name="reservation_id" value="<?php echo $reservation['id']; ?>">
                                 <textarea name="commentaire" placeholder="Commentaire" class="commentaire-input"></textarea>
+                                <input type="text" name="signature" placeholder="Signature de l'administrateur" required class="signature-input">
                                 <button type="submit" name="valider" class="btn btn-valider">Valider</button>
                                 <button type="button" class="btn btn-modifier" onclick="modifierDates(<?php echo $reservation['id']; ?>)">Modifier dates</button>
                             </form>

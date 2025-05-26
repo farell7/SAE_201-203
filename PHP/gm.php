@@ -37,6 +37,24 @@ try {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )");
 
+    // Vérifier si la colonne numero_serie existe, sinon l'ajouter
+    $columns = $pdo->query("SHOW COLUMNS FROM materiel LIKE 'numero_serie'")->fetchAll();
+    if (empty($columns)) {
+        $pdo->exec("ALTER TABLE materiel ADD COLUMN numero_serie VARCHAR(100) AFTER description");
+    }
+
+    // Vérifier si la colonne etat existe, sinon l'ajouter
+    $columns = $pdo->query("SHOW COLUMNS FROM materiel LIKE 'etat'")->fetchAll();
+    if (empty($columns)) {
+        $pdo->exec("ALTER TABLE materiel ADD COLUMN etat VARCHAR(50) DEFAULT 'bon' AFTER numero_serie");
+    }
+
+    // Vérifier si la colonne photo existe, sinon l'ajouter
+    $columns = $pdo->query("SHOW COLUMNS FROM materiel LIKE 'photo'")->fetchAll();
+    if (empty($columns)) {
+        $pdo->exec("ALTER TABLE materiel ADD COLUMN photo VARCHAR(255) AFTER etat");
+    }
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS reservation_materiel (
         id INT AUTO_INCREMENT PRIMARY KEY,
         materiel_id INT NOT NULL,
@@ -82,14 +100,23 @@ if (!file_exists($uploadDir)) {
 function uploadImage($inputName, $uploadDir) {
     if (!empty($_FILES[$inputName]['name'])) {
         $fileName = uniqid() . '_' . basename($_FILES[$inputName]['name']);
-        $targetPath = $uploadDir . '/' . $fileName;
         
-        if (!file_exists($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+        // Création du chemin absolu pour le dossier d'upload
+        $absoluteUploadDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'materiel';
+        
+        // Création du dossier s'il n'existe pas
+        if (!file_exists($absoluteUploadDir)) {
+            mkdir($absoluteUploadDir, 0777, true);
         }
         
-        if (move_uploaded_file($_FILES[$inputName]['tmp_name'], '../' . $targetPath)) {
-            return $targetPath;
+        // Chemin complet du fichier
+        $targetPath = $absoluteUploadDir . DIRECTORY_SEPARATOR . $fileName;
+        
+        // Chemin relatif pour la base de données
+        $dbPath = 'uploads/materiel/' . $fileName;
+        
+        if (move_uploaded_file($_FILES[$inputName]['tmp_name'], $targetPath)) {
+            return $dbPath;
         }
     }
     return '';

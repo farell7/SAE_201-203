@@ -15,6 +15,20 @@ if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Mise à jour de la structure de la table reservation_salle si elle existe
+    try {
+        $pdo->exec("ALTER TABLE reservation_salle 
+                    ADD COLUMN IF NOT EXISTS commentaire TEXT,
+                    ADD COLUMN IF NOT EXISTS signature_admin VARCHAR(255),
+                    ADD COLUMN IF NOT EXISTS date_signature DATETIME");
+    } catch (PDOException $e) {
+        // Si l'erreur n'est pas liée à l'existence des colonnes, on la propage
+        if ($e->getCode() !== '42S21') { // 42S21 = Column already exists
+            throw $e;
+        }
+    }
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS materiel (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nom VARCHAR(255) NOT NULL,
@@ -39,6 +53,20 @@ try {
         date_signature DATETIME,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (materiel_id) REFERENCES materiel(id) ON DELETE CASCADE
+    )");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS reservation_salle (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        salle_id INT NOT NULL,
+        user_id INT NOT NULL,
+        date_debut DATETIME NOT NULL,
+        date_fin DATETIME NOT NULL,
+        statut ENUM('en_attente', 'validee', 'refusee', 'annulee') DEFAULT 'en_attente',
+        commentaire TEXT,
+        signature_admin VARCHAR(255),
+        date_signature DATETIME,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (salle_id) REFERENCES salle(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES utilisateur(id) ON DELETE CASCADE
     )");
 } catch (PDOException $e) {
     die("Erreur de connexion : " . $e->getMessage());
@@ -117,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $photo = $stmt->fetchColumn();
                 
                 // Supprimer d'abord toutes les réservations associées
-                $pdo->prepare("DELETE FROM reservation WHERE salle_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM reservation_salle WHERE salle_id = ?")->execute([$id]);
                 
                 // Puis supprimer la salle
                 $pdo->prepare("DELETE FROM salle WHERE id = ?")->execute([$id]);
@@ -145,25 +173,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($signature)) throw new Exception("La signature est requise.");
             $statut = isset($_POST['valider']) ? 'validee' : 'refusee';
             if ($statut === 'refusee' && empty($commentaire)) throw new Exception("Un commentaire est requis pour refuser.");
-            $sql = "UPDATE reservation SET statut=?, commentaire=?, signature_admin=?, date_signature=NOW() WHERE id=?";
+            $sql = "UPDATE reservation_salle SET statut=?, commentaire=?, signature_admin=?, date_signature=NOW() WHERE id=?";
             $pdo->prepare($sql)->execute([$statut, $commentaire, $signature, $reservation_id]);
             $message = $statut === 'validee' ? "La réservation a été validée." : "La réservation a été refusée.";
             $messageType = "success";
         }
         if (isset($_POST['modifier_date'])) {
-            $pdo->prepare("UPDATE reservation SET date_debut=?, date_fin=? WHERE id=?")
+            $pdo->prepare("UPDATE reservation_salle SET date_debut=?, date_fin=? WHERE id=?")
                 ->execute([$_POST['date_debut'], $_POST['date_fin'], (int)$_POST['reservation_id']]);
             $message = "Date modifiée.";
             $messageType = "success";
         }
         if (isset($_POST['annuler'])) {
-            $pdo->prepare("UPDATE reservation SET statut='annulee' WHERE id=?")
+            $pdo->prepare("UPDATE reservation_salle SET statut='annulee' WHERE id=?")
                 ->execute([(int)$_POST['reservation_id']]);
             $message = "Réservation annulée.";
             $messageType = "success";
         }
         if (isset($_POST['reserver'])) {
-            $pdo->prepare("INSERT INTO reservation (salle_id, utilisateur_id, date_debut, date_fin, statut) VALUES (?, ?, ?, ?, 'validee')")
+            $pdo->prepare("INSERT INTO reservation_salle (salle_id, user_id, date_debut, date_fin, statut) VALUES (?, ?, ?, ?, 'validee')")
                 ->execute([(int)$_POST['salle_id'], $_SESSION['user_id'], $_POST['date_debut'], $_POST['date_fin']]);
             $message = "Réservation créée.";
             $messageType = "success";
@@ -175,11 +203,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $materiels = $pdo->query("SELECT * FROM materiel ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-$sql = "SELECT r.*, s.nom as salle_nom 
-        FROM reservation r 
-        JOIN salle s ON r.salle_id = s.id 
-        WHERE r.statut = 'en_attente' 
-        ORDER BY r.date_debut DESC";
+$sql = "SELECT rs.*, s.nom as salle_nom 
+        FROM reservation_salle rs 
+        JOIN salle s ON rs.salle_id = s.id 
+        WHERE rs.statut = 'en_attente' 
+        ORDER BY rs.date_debut DESC";
 $reservations = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
 // Récupération de la liste des salles

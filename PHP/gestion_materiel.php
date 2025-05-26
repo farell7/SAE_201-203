@@ -5,24 +5,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion du Matériel - Admin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/gestion_materiel.css">
 </head>
 <body>
-    <nav class="nav-container">
-        <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
-        <div class="nav-menu">
-            <a href="admin.php">Tableau de bord</a>
-            <a href="gestion_materiel.php" class="active">Gestions</a>
-            <a href="suivi_reservations.php">Suivi</a>
+    <nav>
+        <div class="nav-left">
+            <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
+            <a href="admin.php" class="active">Accueil</a>
+            <a href="reservation_salle.php" class="active">Salles</a>
+            <a href="reservation_materiel.php" class="active">Matériel</a>
+            <a href="validation_compte.php" class="active">Utilisateurs</a>
+            <a href="statistiques.php">Statistiques</a>
         </div>
-        <div class="profile-menu">
-            <img src="../img/profil.png" alt="Profile" class="profile-icon">
-            <div class="menu-icon">☰</div>
+        <div class="nav-right">
+            <span>admin admin</span>
+            <a href="../logout.php">Déconnexion</a>
         </div>
     </nav>
+
+    <style>
+    nav {
+        background-color: #2f2a85;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav-left a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+    }
+
+    .nav-left a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav-right span {
+        color: white;
+    }
+
+    .nav-right a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+    }
+
+    .nav-right a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    </style>
 
     <main class="main-content">
         <h1>Gestion du Matériel</h1>
