@@ -100,6 +100,19 @@ unset($_SESSION['error']);
     <div class="container" id="container">
         <div class="form-container sign-up">
             <div class="register-title"><h1>Créer un compte</h1></div>
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="error-message">
+                    <?php echo $_SESSION['error']; ?>
+                </div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+            
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="success-message">
+                    <?php echo $_SESSION['success']; ?>
+                </div>
+                <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
             <form action="PHP/register.php" method="POST">
                 <input type="text" name="nom" placeholder="Nom" required> 
                 <input type="text" name="prenom" placeholder="Prénom" required>
@@ -122,14 +135,14 @@ unset($_SESSION['error']);
                 <h1>Se connecter</h1>
                 <?php if (isset($_SESSION['error'])): ?>
                     <div class="error-message">
-                        <p style='color: red;'><?php echo $_SESSION['error']; ?></p>
+                        <?php echo $_SESSION['error']; ?>
                     </div>
                     <?php unset($_SESSION['error']); ?>
                 <?php endif; ?>
                 
                 <?php if (isset($_SESSION['success'])): ?>
                     <div class="success-message">
-                        <p style='color: green;'><?php echo $_SESSION['success']; ?></p>
+                        <?php echo $_SESSION['success']; ?>
                     </div>
                     <?php unset($_SESSION['success']); ?>
                 <?php endif; ?>
