@@ -2,8 +2,8 @@
 session_start();
 require_once 'includes/redirect_role.php';
 
-// Vérifier si l'utilisateur est connecté et est un étudiant
-if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'student') {
+// Vérifier si l'utilisateur est connecté et a les droits appropriés
+if (!isset($_SESSION['utilisateur']) || !in_array($_SESSION['utilisateur']['role'], ['student', 'admin'])) {
     redirect_to_role_home();
 }
 
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['materiel_id'])) {
         // Vérifier si le matériel est disponible pour cette période
         $sql_check = "SELECT COUNT(*) FROM reservation_materiel
                      WHERE materiel_id = :materiel_id 
-                     AND statut = 'validee'
+                     AND statut != 'refusee'
                      AND (
                          (date_debut BETWEEN :date_debut AND :date_fin)
                          OR (date_fin BETWEEN :date_debut AND :date_fin)
@@ -70,12 +70,35 @@ $stmt = $conn->prepare($sql);
 $stmt->execute();
 $materiels = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupérer les réservations de l'utilisateur
-$sql_reservations = "SELECT r.*, m.nom as materiel_nom, m.type as materiel_type 
-                    FROM reservation_materiel r 
-                    JOIN materiel m ON r.materiel_id = m.id 
-                    WHERE r.user_id = :user_id 
-                    ORDER BY r.created_at DESC";
+// Récupérer les réservations et les demandes de l'utilisateur
+$sql_reservations = "SELECT 
+    'reservation' as type_demande,
+    r.date_debut,
+    r.date_fin,
+    r.statut,
+    r.commentaire,
+    m.nom as materiel_nom,
+    m.type as materiel_type
+FROM reservation_materiel r 
+JOIN materiel m ON r.materiel_id = m.id 
+WHERE r.user_id = :user_id 
+
+UNION ALL
+
+SELECT 
+    'demande' as type_demande,
+    dm.date_debut,
+    dm.date_fin,
+    dm.statut,
+    NULL as commentaire,
+    dmi.nom_materiel as materiel_nom,
+    dmi.nom_materiel as materiel_type
+FROM demande_materiel dm
+JOIN demande_materiel_items dmi ON dm.id = dmi.demande_id
+WHERE dm.user_id = :user_id 
+
+ORDER BY date_debut DESC";
+
 $stmt_reservations = $conn->prepare($sql_reservations);
 $stmt_reservations->execute(['user_id' => $_SESSION['utilisateur']['id']]);
 $reservations = $stmt_reservations->fetchAll(PDO::FETCH_ASSOC);
@@ -99,20 +122,187 @@ unset($_SESSION['message_type']);
     <link rel="stylesheet" href="../CSS/reservation_mat.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-body {
+            max-height: calc(90vh - 120px);
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        #calendar {
+            margin-bottom: 20px;
+        }
+
+        .datetime-inputs {
+            margin: 20px 0;
+        }
+
+        .validation-info {
+            font-size: 0.9em;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #4a5568;
+        }
+
+        .validation-info .signature {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .validation-info .date-signature {
+            color: #718096;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+
+        .validation-info .commentaire {
+            color: #4a5568;
+            font-style: italic;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 4px;
+            margin-top: 4px;
+        }
+
+        .no-validation {
+            color: #718096;
+            font-style: italic;
+        }
+
+        .statut-en_attente {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .statut-validee {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .statut-refusee {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* Badges de statut */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .bg-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .bg-warning {
+            background-color: #f59e0b;
+            color: black;
+        }
+
+        .bg-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .reservations-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .reservations-table th,
+        .reservations-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .reservations-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .reservations-table tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
 </head>
 <body>
     <nav class="nav-container">
         <div style="display: flex; align-items: center; gap: 12px;">
             <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
             <div class="nav-menu">
-                <a href="student.php">Accueil</a>
-                <a href="reservation_materiel.php" class="active">Réservations</a>
-                <a href="demande_materiel.php">Demande de matériel</a>
+                <?php if ($_SESSION['utilisateur']['role'] === 'admin'): ?>
+                    <a href="admin.php">Accueil</a>
+                    <a href="gestion_materiel.php">Gestion du matériel</a>
+                    <a href="gestion_salle.php">Gestion des salles</a>
+                    <a href="validation_compte.php">Utilisateurs</a>
+                    <a href="reservation_materiel.php" class="active">Réservations</a>
+                <?php else: ?>
+                    <a href="student.php">Accueil</a>
+                    <a href="reservation_materiel.php" class="active">Réservations</a>
+                <?php endif; ?>
+                <a href="profil.php">Mon Compte</a>
             </div>
         </div>
         <div class="profile-menu">
-            <img src="../img/profil.png" alt="Profile" class="profile-icon">
-            <a href="../logout.php" class="logout-btn">Déconnexion</a>
+            <a href="profil.php" class="user-info">
+                <?php if (!empty($_SESSION['utilisateur']['photo'])): ?>
+                    <img src="<?php echo htmlspecialchars($_SESSION['utilisateur']['photo']); ?>" alt="Photo de profil" class="profile-icon">
+                <?php else: ?>
+                    <img src="../img/profil.png" alt="Photo de profil par défaut" class="profile-icon">
+                <?php endif; ?>
+                <span><?php echo htmlspecialchars($_SESSION['utilisateur']['prenom'] . ' ' . $_SESSION['utilisateur']['nom']); ?></span>
+            </a>
+            <a href="../logout.php" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Déconnexion
+            </a>
         </div>
     </nav>
 
@@ -188,9 +378,18 @@ unset($_SESSION['message_type']);
                                     <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
                                     <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
                                     <td>
-                                        <span class="statut-<?php echo strtolower($reservation['statut']); ?>">
+                                        <span class="badge <?php 
+                                            echo $reservation['statut'] === 'validee' ? 'bg-success' : 
+                                                ($reservation['statut'] === 'en_attente' ? 'bg-warning' : 
+                                                ($reservation['statut'] === 'approuvee' ? 'bg-success' : 'bg-danger')); 
+                                        ?>">
                                             <?php echo htmlspecialchars($reservation['statut']); ?>
                                         </span>
+                                        <?php if ($reservation['commentaire']): ?>
+                                            <div class="commentaire" style="margin-top: 4px; font-size: 0.9em; color: #666;">
+                                                <?php echo htmlspecialchars($reservation['commentaire']); ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -215,18 +414,20 @@ unset($_SESSION['message_type']);
             <div class="modal-body">
                 <div id="calendar"></div>
                 
-                <div class="datetime-inputs">
-                    <div class="datetime-field">
-                        <label>Date et heure de début</label>
-                        <input type="datetime-local" id="date_debut" name="date_debut">
+                <form method="GET" action="demande_materiel.php">
+                    <input type="hidden" name="materiel_id" id="materiel_id">
+                    <div class="datetime-inputs">
+                        <div class="datetime-field">
+                            <label>Date et heure de début</label>
+                            <input type="datetime-local" id="date_debut" name="date_debut" required>
+                        </div>
+                        <div class="datetime-field">
+                            <label>Date et heure de fin</label>
+                            <input type="datetime-local" id="date_fin" name="date_fin" required>
+                        </div>
                     </div>
-                    <div class="datetime-field">
-                        <label>Date et heure de fin</label>
-                        <input type="datetime-local" id="date_fin" name="date_fin">
-                    </div>
-                </div>
-
-                <a href="demande_materiel.php" class="btn-demande">Faire une demande de matériel</a>
+                    <button type="submit" class="btn-reserver">Continuer vers la demande</button>
+                </form>
             </div>
         </div>
     </div>
@@ -239,6 +440,7 @@ unset($_SESSION['message_type']);
         // Fonction pour afficher la modal
         window.afficherCalendrier = function(materielId, materielNom) {
             document.getElementById('materiel-nom').textContent = materielNom;
+            document.getElementById('materiel_id').value = materielId;
             modal.style.display = 'block';
             
             // Initialisation du calendrier si pas déjà fait

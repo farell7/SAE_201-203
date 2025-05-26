@@ -1,15 +1,38 @@
 <?php
 session_start();
-require_once 'includes/redirect_role.php';
+
+// Fonction pour vérifier si l'utilisateur est connecté
+function checkLogin() {
+    if (!isset($_SESSION['utilisateur'])) {
+        header('Location: /SAE_201-203/index.php');
+        exit();
+    }
+}
+
+// Fonction pour vérifier le rôle de l'utilisateur
+function checkRole($allowed_roles) {
+    checkLogin();
+    
+    if (!in_array($_SESSION['utilisateur']['role'], $allowed_roles)) {
+        switch($_SESSION['utilisateur']['role']) {
+            case 'admin':
+                header('Location: /SAE_201-203/PHP/admin.php');
+                break;
+            case 'agent':
+                header('Location: /SAE_201-203/PHP/agent.php');
+                break;
+            case 'teacher':
+                header('Location: /SAE_201-203/PHP/teacher.php');
+                break;
+            default:
+                header('Location: /SAE_201-203/PHP/student.php');
+        }
+        exit();
+    }
+}
 
 // Définir le chemin de base
 define('BASE_PATH', '/SAE_201-203');
-
-// Vérifier si l'utilisateur est connecté
-if (!isset($_SESSION['utilisateur'])) {
-    header('Location: ../index.php');
-    exit();
-}
 
 // Récupérer le rôle de l'utilisateur
 $role = $_SESSION['utilisateur']['role'];
@@ -24,26 +47,18 @@ switch($current_page) {
     case 'gestion_materiel':
     case 'gestion_salle':
     case 'validation_compte':
-        if ($role !== 'admin') {
-            redirect_to_role_home();
-        }
+        checkRole(['admin']);
         break;
     case 'student':
     case 'reservation_materiel':
     case 'demande_materiel':
-        if ($role !== 'student') {
-            redirect_to_role_home();
-        }
+        checkRole(['student']);
         break;
     case 'teacher':
-        if ($role !== 'teacher') {
-            redirect_to_role_home();
-        }
+        checkRole(['teacher']);
         break;
     case 'agent':
-        if ($role !== 'agent') {
-            redirect_to_role_home();
-        }
+        checkRole(['agent']);
         break;
 }
 

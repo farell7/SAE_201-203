@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS demande_materiel (
     annee_mmi INT NOT NULL,
     groupe_tp VARCHAR(10) NOT NULL,
     statut ENUM('en_attente', 'approuvee', 'refusee') DEFAULT 'en_attente',
+    signature_admin VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

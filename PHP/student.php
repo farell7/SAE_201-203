@@ -30,11 +30,18 @@ if ($user['role'] !== 'student') {
             <div class="nav-menu">
                 <a href="student.php" class="active">Accueil</a>
                 <a href="reservation_salle.php">Réservations</a>
-                <a href="#">Mon Compte</a>
+                <a href="profil.php">Mon Compte</a>
             </div>
         </div>
         <div class="profile-menu">
-            <img src="../img/profil.png" alt="Profile" class="profile-icon">
+            <a href="profil.php" class="user-info">
+                <?php if (!empty($_SESSION['utilisateur']['photo'])): ?>
+                    <img src="<?php echo htmlspecialchars($_SESSION['utilisateur']['photo']); ?>" alt="Photo de profil" class="profile-icon">
+                <?php else: ?>
+                    <img src="../img/profil.png" alt="Photo de profil par défaut" class="profile-icon">
+                <?php endif; ?>
+                <span><?php echo htmlspecialchars($_SESSION['utilisateur']['prenom'] . ' ' . $_SESSION['utilisateur']['nom']); ?></span>
+            </a>
             <a href="../logout.php" class="logout-btn">Déconnexion</a>
         </div>
     </nav>
@@ -56,20 +63,20 @@ if ($user['role'] !== 'student') {
                 <h3>Réserver du Matériel</h3>
                 <p>Empruntez le matériel nécessaire</p>
             </a>
-            <div class="course-card">
+            <a href="mes_reservations.php" class="course-card">
                 <div class="icon-container">
                     <img src="../img/nom.png" alt="Mes réservations">
                 </div>
                 <h3>Mes Réservations</h3>
                 <p>Consultez vos réservations</p>
-            </div>
-            <div class="course-card">
+            </a>
+            <a href="disponibilites.php" class="course-card">
                 <div class="icon-container">
                     <img src="../img/profil.png" alt="Disponibilités">
                 </div>
                 <h3>Disponibilités</h3>
                 <p>Voir les disponibilités</p>
-            </div>
+            </a>
         </div>
     </div>
 

@@ -7,8 +7,9 @@ $_SESSION = array();
 
 // Détruire la session
 session_destroy();
+session_unset();
 
 // Rediriger vers la page de connexion
-header('Location: ../index.php');
+header('Location: /SAE_201-203/index.php');
 exit();
 ?> 

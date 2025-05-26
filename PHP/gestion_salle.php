@@ -247,7 +247,7 @@ include 'gs.php';
                         <td><?php echo $salle['disponible'] ? 'Oui' : 'Non'; ?></td>
                         <td>
                             <?php if (!empty($salle['photo'])): ?>
-                                <img src="../uploads/salles/<?php echo htmlspecialchars($salle['photo']); ?>" alt="Photo salle" style="max-width:80px;max-height:80px;">
+                                <img src="../<?php echo htmlspecialchars($salle['photo']); ?>" alt="Photo salle" style="max-width:80px;max-height:80px;">
                             <?php else: ?>
                                 <span style="color:#888;">Aucune</span>
                             <?php endif; ?>

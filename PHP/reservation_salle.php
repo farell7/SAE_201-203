@@ -12,6 +12,45 @@
     <link rel="stylesheet" href="../CSS/reservation_salle.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-body {
+            max-height: calc(90vh - 120px);
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        #calendar {
+            margin-bottom: 20px;
+        }
+
+        .form-reservation {
+            padding: 20px 0;
+        }
+    </style>
 </head>
 <body>
     <nav class="nav-container">
@@ -19,11 +58,18 @@
         <div class="nav-menu">
             <a href="student.php">Accueil</a>
             <a href="#" class="active">Réservations</a>
-            <a href="#">Mon Compte</a>
+            <a href="profil.php">Mon Compte</a>
         </div>
         <div class="profile-menu">
-            <img src="../img/profil.png" alt="Profile" class="profile-icon">
-            <div class="menu-icon">☰</div>
+            <a href="profil.php" class="user-info">
+                <?php if (!empty($_SESSION['utilisateur']['photo'])): ?>
+                    <img src="<?php echo htmlspecialchars($_SESSION['utilisateur']['photo']); ?>" alt="Photo de profil" class="profile-icon">
+                <?php else: ?>
+                    <img src="../img/profil.png" alt="Photo de profil par défaut" class="profile-icon">
+                <?php endif; ?>
+                <span><?php echo htmlspecialchars($_SESSION['utilisateur']['prenom'] . ' ' . $_SESSION['utilisateur']['nom']); ?></span>
+            </a>
+            <a href="../logout.php" class="logout-btn">Déconnexion</a>
         </div>
     </nav>
 
@@ -53,25 +99,10 @@
             ?>
                 <div class="salle-card">
                     <?php if (!empty($salle['photo'])): ?>
-                        <?php
-                        // Nettoyer et corriger le chemin de la photo
-                        $photo_path = $salle['photo'];
-                        // Si le chemin contient déjà 'uploads/', on le laisse tel quel
-                        if (strpos($photo_path, 'uploads/') === false) {
-                            $photo_path = 'uploads/salles/' . basename($photo_path);
-                        }
-                        // Remplacer 'materiel' par 'salles' si nécessaire
-                        $photo_path = str_replace('materiel', 'salles', $photo_path);
-                        ?>
-                        <img src="/ResaUGE-Project/<?php echo htmlspecialchars($photo_path); ?>" 
+                        <img src="../<?php echo htmlspecialchars($salle['photo']); ?>" 
                              alt="<?php echo htmlspecialchars($salle['nom']); ?>" 
                              class="salle-photo"
-                             onerror="this.src='/ResaUGE-Project/img/no-image.png'">
-                        <!-- Debug -->
-                        <div style="display: none;">
-                            Chemin original : <?php echo htmlspecialchars($salle['photo']); ?><br>
-                            Chemin corrigé : <?php echo htmlspecialchars($photo_path); ?>
-                        </div>
+                             onerror="this.src='../img/no-image.png'">
                     <?php else: ?>
                         <div class="salle-photo" style="background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
                             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">

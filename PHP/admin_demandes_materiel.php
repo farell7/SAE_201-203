@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
     $nouveau_statut = ($action === 'approuver') ? 'approuvee' : 'refusee';
     $signature_admin = $_SESSION['utilisateur']['prenom'] . ' ' . $_SESSION['utilisateur']['nom'];
     
-    $sql_update = "UPDATE demandes_materiel SET statut = :statut, signature_admin = :signature WHERE id = :id";
+    $sql_update = "UPDATE demande_materiel SET statut = :statut, signature_admin = :signature WHERE id = :id";
     $stmt_update = $conn->prepare($sql_update);
     $stmt_update->execute([
         ':statut' => $nouveau_statut,
@@ -29,12 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
     exit();
 }
 
-// Récupérer toutes les demandes de matériel avec les détails
-$sql = "SELECT dm.*, GROUP_CONCAT(CONCAT(ddm.nom_materiel, ' (', ddm.quantite, ')') SEPARATOR ', ') as materiels
-        FROM demandes_materiel dm
-        LEFT JOIN details_demande_materiel ddm ON dm.id = ddm.id_demande
+// Récupérer toutes les demandes de matériel avec les items associés
+$sql = "SELECT dm.*, GROUP_CONCAT(CONCAT(dmi.nom_materiel, ' (', dmi.quantite, ')') SEPARATOR ', ') as materiels_list
+        FROM demande_materiel dm
+        LEFT JOIN demande_materiel_items dmi ON dm.id = dmi.demande_id
         GROUP BY dm.id
-        ORDER BY dm.date_creation DESC";
+        ORDER BY dm.created_at DESC";
 
 $stmt = $conn->prepare($sql);
 $stmt->execute();
@@ -290,13 +290,13 @@ $demandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <tbody>
                 <?php foreach ($demandes as $demande): ?>
                 <tr>
-                    <td><?php echo date('d/m/Y H:i', strtotime($demande['date_creation'])); ?></td>
+                    <td><?php echo date('d/m/Y H:i', strtotime($demande['created_at'])); ?></td>
                     <td><?php echo htmlspecialchars($demande['prenom'] . ' ' . $demande['nom']); ?></td>
                     <td><?php echo htmlspecialchars($demande['numero_etudiant']); ?></td>
                     <td><?php echo htmlspecialchars($demande['email']); ?></td>
-                    <td><?php echo date('d/m/Y', strtotime($demande['date_emprunt'])); ?></td>
-                    <td><?php echo $demande['heure_emprunt'] . ' - ' . $demande['heure_retour']; ?></td>
-                    <td><?php echo htmlspecialchars($demande['materiels']); ?></td>
+                    <td><?php echo date('d/m/Y', strtotime($demande['date_debut'])); ?></td>
+                    <td><?php echo date('H:i', strtotime($demande['date_debut'])) . ' - ' . date('H:i', strtotime($demande['date_fin'])); ?></td>
+                    <td><?php echo htmlspecialchars($demande['materiels_list'] ?? 'Non spécifié'); ?></td>
                     <td>
                         <span class="status status-<?php echo strtolower($demande['statut']); ?>">
                             <?php echo ucfirst($demande['statut']); ?>

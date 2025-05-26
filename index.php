@@ -2,7 +2,7 @@
 session_start();
 
 // Définir le chemin de base
-define('BASE_PATH', '/ResaUGE-Project');
+define('BASE_PATH', '/SAE_201-203');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_POST['password'])) {
     require_once 'PHP/connexion.php';

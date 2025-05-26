@@ -78,8 +78,12 @@ function uploadImage($input, $dir) {
     if (!empty($_FILES[$input]['name'])) {
         $ext = pathinfo($_FILES[$input]['name'], PATHINFO_EXTENSION);
         $file = uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES[$input]['tmp_name'], "$dir/$file");
-        return 'uploads/materiel/' . $file;
+        
+        // Déplacer le fichier
+        if (move_uploaded_file($_FILES[$input]['tmp_name'], "$dir/$file")) {
+            // Retourner le chemin relatif pour la base de données
+            return str_replace('../', '', $dir) . '/' . $file;
+        }
     }
     return '';
 }
@@ -94,7 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $photo = '';
             if (!empty($_FILES['photo']['name'])) {
                 $uploadDir = "../uploads/salles";
-                if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
                 $photo = uploadImage('photo', $uploadDir);
             }
             

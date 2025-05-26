@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Récupérer la liste des utilisateurs
-$sql = "SELECT * FROM utilisateur ORDER BY date_creation DESC";
+$sql = "SELECT * FROM utilisateur ORDER BY created_at DESC";
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -283,10 +283,10 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </a>
             <div class="nav-menu">
                 <a href="admin.php"><i class="fas fa-home"></i> Accueil</a>
-                <a href="reservation_salle.php"><i class="fas fa-door-open"></i> Salles</a>
-                <a href="reservation_materiel.php"><i class="fas fa-tools"></i> Matériel</a>
+                <a href="gestion_salle.php"><i class="fas fa-door-open"></i> Salles</a>
+                <a href="gestion_materiel.php"><i class="fas fa-tools"></i> Matériel</a>
                 <a href="validation_compte.php" class="active"><i class="fas fa-users"></i> Utilisateurs</a>
-                <a href="statistiques.php"><i class="fas fa-chart-bar"></i> Statistiques</a>
+                <a href="suivi_reservations.php"><i class="fas fa-chart-bar"></i> Statistiques</a>
             </div>
         </div>
         <div class="nav-right">
@@ -332,7 +332,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo htmlspecialchars($utilisateur['prenom']); ?></td>
                         <td><?php echo htmlspecialchars($utilisateur['email']); ?></td>
                         <td><?php echo htmlspecialchars($utilisateur['role']); ?></td>
-                        <td><?php echo date('d/m/Y H:i', strtotime($utilisateur['date_creation'])); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($utilisateur['created_at'])); ?></td>
                         <td>
                             <span class="status-badge <?php echo $utilisateur['valide'] ? 'status-valide' : 'status-en-attente'; ?>">
                                 <?php echo $utilisateur['valide'] ? 'Validé' : 'En attente'; ?>

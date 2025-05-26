@@ -2,7 +2,7 @@
 require_once 'connexion.php';
 
 try {
-    $sql_file = 'database.sql';
+    $sql_file = __DIR__ . '/database.sql';
     
     // Vérifier si le fichier existe
     if (!file_exists($sql_file)) {

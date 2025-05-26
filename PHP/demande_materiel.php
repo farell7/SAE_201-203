@@ -191,9 +191,17 @@ if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'st
             <a href="student.php">Accueil</a>
             <a href="reservation_materiel.php">Réservations</a>
             <a href="#" class="active">Demande de matériel</a>
+            <a href="profil.php">Mon Compte</a>
         </div>
         <div class="profile-menu">
-            <img src="../img/profil.png" alt="Profile" class="profile-icon">
+            <a href="profil.php" class="user-info">
+                <?php if (!empty($_SESSION['utilisateur']['photo'])): ?>
+                    <img src="<?php echo htmlspecialchars($_SESSION['utilisateur']['photo']); ?>" alt="Photo de profil" class="profile-icon">
+                <?php else: ?>
+                    <img src="../img/profil.png" alt="Photo de profil par défaut" class="profile-icon">
+                <?php endif; ?>
+                <span><?php echo htmlspecialchars($_SESSION['utilisateur']['prenom'] . ' ' . $_SESSION['utilisateur']['nom']); ?></span>
+            </a>
             <a href="../logout.php" class="logout-btn">Déconnexion</a>
         </div>
     </nav>

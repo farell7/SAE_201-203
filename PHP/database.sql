@@ -15,8 +15,9 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- Création de la base de données si elle n'existe pas
-CREATE DATABASE IF NOT EXISTS resauge;
+-- Suppression de la base si elle existe et création d'une nouvelle
+DROP DATABASE IF EXISTS resauge;
+CREATE DATABASE resauge;
 USE resauge;
 
 --
@@ -31,15 +32,18 @@ CREATE TABLE `utilisateur` (
   `email` varchar(255) NOT NULL,
   `mot_de_passe` varchar(255) NOT NULL,
   `pseudo` varchar(50) DEFAULT NULL,
-  `code_postal` varchar(5) DEFAULT NULL,
+  `code_postal` varchar(5) DEFAULT NULL CHECK (code_postal REGEXP '^[0-9]{5}$'),
+  `numero_etudiant` varchar(8) DEFAULT NULL,
   `date_naissance` date DEFAULT NULL,
   `role` enum('student','teacher','agent','admin') NOT NULL,
   `valide` tinyint(1) DEFAULT 0,
   `reset_token` varchar(64) DEFAULT NULL,
   `reset_expiry` datetime DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `numero_etudiant` (`numero_etudiant`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -53,11 +57,12 @@ CREATE TABLE `materiel` (
   `type` varchar(50) NOT NULL,
   `description` text DEFAULT NULL,
   `numero_serie` varchar(100) DEFAULT NULL,
-  `etat` varchar(50) DEFAULT 'bon',
+  `etat` enum('neuf','bon','moyen','mauvais') DEFAULT 'bon',
   `photo` varchar(255) DEFAULT NULL,
   `disponible` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `numero_serie` (`numero_serie`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -68,14 +73,15 @@ DROP TABLE IF EXISTS `salle`;
 CREATE TABLE `salle` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nom` varchar(100) NOT NULL,
-  `capacite` int(11) NOT NULL,
+  `capacite` int(11) NOT NULL CHECK (capacite > 0),
   `type` varchar(50) NOT NULL,
   `equipements` text DEFAULT NULL,
   `disponible` tinyint(1) DEFAULT 1,
   `photo` varchar(255) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nom` (`nom`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -97,8 +103,10 @@ CREATE TABLE `reservation_materiel` (
   PRIMARY KEY (`id`),
   KEY `materiel_id` (`materiel_id`),
   KEY `user_id` (`user_id`),
+  KEY `idx_dates` (`date_debut`, `date_fin`),
   CONSTRAINT `reservation_materiel_ibfk_1` FOREIGN KEY (`materiel_id`) REFERENCES `materiel` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `reservation_materiel_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `utilisateur` (`id`) ON DELETE CASCADE
+  CONSTRAINT `reservation_materiel_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `utilisateur` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `check_dates_materiel` CHECK (`date_fin` > `date_debut`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -112,7 +120,7 @@ CREATE TABLE `reservation_salle` (
   `user_id` int(11) NOT NULL,
   `date_debut` datetime NOT NULL,
   `date_fin` datetime NOT NULL,
-  `statut` enum('en_attente','validee','refusee') NOT NULL DEFAULT 'en_attente',
+  `statut` enum('en_attente','validee','refusee','annulee') NOT NULL DEFAULT 'en_attente',
   `commentaire` text DEFAULT NULL,
   `signature_admin` varchar(255) DEFAULT NULL,
   `date_signature` datetime DEFAULT NULL,
@@ -120,8 +128,10 @@ CREATE TABLE `reservation_salle` (
   PRIMARY KEY (`id`),
   KEY `salle_id` (`salle_id`),
   KEY `user_id` (`user_id`),
+  KEY `idx_dates` (`date_debut`, `date_fin`),
   CONSTRAINT `reservation_salle_ibfk_1` FOREIGN KEY (`salle_id`) REFERENCES `salle` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `reservation_salle_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `utilisateur` (`id`) ON DELETE CASCADE
+  CONSTRAINT `reservation_salle_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `utilisateur` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `check_dates_salle` CHECK (`date_fin` > `date_debut`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -134,32 +144,56 @@ CREATE TABLE `demande_materiel` (
   `user_id` int(11) NOT NULL,
   `nom` varchar(100) NOT NULL,
   `prenom` varchar(100) NOT NULL,
-  `numero_etudiant` varchar(50) NOT NULL,
+  `numero_etudiant` varchar(20) NOT NULL,
   `email` varchar(255) NOT NULL,
   `date_debut` datetime NOT NULL,
   `date_fin` datetime NOT NULL,
-  `annee_mmi` varchar(50) NOT NULL,
-  `groupe_tp` varchar(50) NOT NULL,
-  `statut` enum('en_attente','validee','refusee') DEFAULT 'en_attente',
+  `annee_mmi` int(11) NOT NULL,
+  `groupe_tp` varchar(10) NOT NULL,
+  `statut` enum('en_attente','validee','refusee','annulee') NOT NULL DEFAULT 'en_attente',
+  `commentaire` text DEFAULT NULL,
+  `signature_admin` varchar(255) DEFAULT NULL,
+  `date_signature` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
-  CONSTRAINT `demande_materiel_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `utilisateur` (`id`) ON DELETE CASCADE
+  KEY `idx_dates` (`date_debut`, `date_fin`),
+  CONSTRAINT `demande_materiel_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `utilisateur` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `check_dates_demande` CHECK (`date_fin` > `date_debut`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `demande_materiel_items`
+--
+
+DROP TABLE IF EXISTS `demande_materiel_items`;
+CREATE TABLE `demande_materiel_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `demande_id` int(11) NOT NULL,
+  `nom_materiel` varchar(255) NOT NULL,
+  `quantite` int(11) NOT NULL DEFAULT 1,
+  `specifications` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `demande_id` (`demande_id`),
+  CONSTRAINT `demande_materiel_items_ibfk_1` FOREIGN KEY (`demande_id`) REFERENCES `demande_materiel` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Insertion des données de test
-INSERT INTO `utilisateur` VALUES (1,'farel','farel','farel@gmail.com','$2y$10$3YEGQbHPECHGEpRrEXg0qeABGG1EVe6TJUXdYZkqFGIHQkPVOKii.','farel','77420','2000-01-01','admin',1,NULL,NULL,'2025-05-26 14:00:00');
+INSERT INTO `utilisateur` (`nom`, `prenom`, `email`, `mot_de_passe`, `pseudo`, `code_postal`, `numero_etudiant`, `date_naissance`, `role`, `valide`) VALUES
+('Admin', 'System', 'admin@resauge.fr', '$2y$10$3YEGQbHPECHGEpRrEXg0qeABGG1EVe6TJUXdYZkqFGIHQkPVOKii.', 'admin', '77420', NULL, '1990-01-01', 'admin', 1),
+('Dupont', 'Jean', 'jean.dupont@student.fr', '$2y$10$3YEGQbHPECHGEpRrEXg0qeABGG1EVe6TJUXdYZkqFGIHQkPVOKii.', 'jdupont', '75001', '20230001', '2000-01-01', 'student', 1),
+('Martin', 'Sophie', 'sophie.martin@teacher.fr', '$2y$10$3YEGQbHPECHGEpRrEXg0qeABGG1EVe6TJUXdYZkqFGIHQkPVOKii.', 'smartin', '75002', NULL, '1985-05-15', 'teacher', 1);
 
-INSERT INTO `materiel` VALUES 
-(10,'gopro','gopro','gopro','gopro','bon','uploads/materiel/683472b250781_gopro.jpg',1,'2025-05-26 13:54:58'),
-(11,'gopro','lol','non','123156','bon','uploads/materiel/6834734a713dd_drone.JPG',1,'2025-05-26 13:57:30');
+INSERT INTO `materiel` (`nom`, `type`, `description`, `numero_serie`, `etat`, `photo`, `disponible`) VALUES
+('GoPro Hero 10', 'Camera', 'Caméra d''action 5.3K', 'GP2023001', 'neuf', 'uploads/materiel/gopro_hero10.jpg', 1),
+('Canon EOS R5', 'Appareil Photo', 'Appareil photo hybride plein format', 'CN2023001', 'bon', 'uploads/materiel/canon_r5.jpg', 1),
+('DJI Mavic Air 2', 'Drone', 'Drone avec caméra 4K', 'DJ2023001', 'bon', 'uploads/materiel/mavic_air2.jpg', 1);
 
-INSERT INTO `salle` (`id`, `nom`, `capacite`, `type`, `equipements`, `disponible`, `photo`, `description`, `created_at`) VALUES 
-(8,'Salle 212',2,'standard',NULL,1,'uploads/salles/683478d0339f6.jpg','non','2025-05-26 14:21:04');
-
-INSERT INTO `reservation_materiel` VALUES 
-(1,10,1,'2025-05-27 16:00:00','2025-05-27 18:00:00','validee','','farel','2025-05-26 16:19:06','2025-05-26 14:17:59'),
-(2,10,1,'2025-05-27 16:00:00','2025-05-27 18:00:00','en_attente',NULL,NULL,NULL,'2025-05-26 14:18:42');
+INSERT INTO `salle` (`nom`, `capacite`, `type`, `equipements`, `disponible`, `description`) VALUES
+('Salle 101', 30, 'Cours', 'Vidéoprojecteur, Tableau blanc', 1, 'Salle de cours standard'),
+('Studio Photo', 10, 'Studio', 'Fond vert, Éclairages LED, Réflecteurs', 1, 'Studio photo professionnel'),
+('Salle 212', 15, 'TP', 'Ordinateurs, Logiciels Adobe CC', 1, 'Salle informatique avec postes de travail');
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

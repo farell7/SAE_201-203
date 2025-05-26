@@ -62,7 +62,7 @@ $stmt = $conn->query("SELECT s.*,
 $salles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Récupérer les réservations de l'utilisateur
-$sql = "SELECT rs.*, s.nom as salle_nom, s.capacite
+$sql = "SELECT rs.*, s.nom as salle_nom, s.capacite as salle_capacite
         FROM reservation_salle rs
         JOIN salle s ON rs.salle_id = s.id
         WHERE rs.user_id = ?

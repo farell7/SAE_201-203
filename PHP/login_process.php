@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         echo "<script>
             alert('Veuillez remplir tous les champs.');
-            window.location.href = '../index.php';
+            window.location.href = '/SAE_201-203/index.php';
         </script>";
         exit();
     }
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         echo "<script>
             alert('Format d\'email invalide.');
-            window.location.href = '../index.php';
+            window.location.href = '/SAE_201-203/index.php';
         </script>";
         exit();
     }
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user['valide'] == 0) {
                 echo "<script>
                     alert('Votre compte est en attente de validation par l\\'administrateur.');
-                    window.location.href = '../index.php';
+                    window.location.href = '/SAE_201-203/index.php';
                 </script>";
                 exit();
             }
@@ -50,23 +50,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Redirection selon le rôle
             switch($user['role']) {
                 case 'admin':
-                    header('Location: admin.php');
+                    header('Location: /SAE_201-203/PHP/admin.php');
                     break;
                 case 'agent':
-                    header('Location: agent.php');
+                    header('Location: /SAE_201-203/PHP/agent.php');
                     break;
                 case 'teacher':
-                    header('Location: teacher.php');
+                    header('Location: /SAE_201-203/PHP/teacher.php');
                     break;
                 default:
-                    header('Location: student.php');
+                    header('Location: /SAE_201-203/PHP/student.php');
             }
             exit();
             
         } else {
             echo "<script>
                 alert('Email ou mot de passe incorrect.');
-                window.location.href = '../index.php';
+                window.location.href = '/SAE_201-203/index.php';
             </script>";
             exit();
         }
@@ -75,12 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("Erreur de connexion : " . $e->getMessage());
         echo "<script>
             alert('Une erreur est survenue lors de la connexion.');
-            window.location.href = '../index.php';
+            window.location.href = '/SAE_201-203/index.php';
         </script>";
         exit();
     }
 } else {
-    header('Location: ../index.php');
+    header('Location: /SAE_201-203/index.php');
     exit();
 }
 ?> 
