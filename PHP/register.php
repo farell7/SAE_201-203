@@ -21,11 +21,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "Cette adresse email est déjà utilisée.";
         } else {
             // Insérer le nouvel utilisateur
-            $compte_valide = ($role === 'admin') ? 1 : 0; // Les admins sont automatiquement validés
-            $query = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, pseudo, code_postal, date_naissance, role, compte_valide) 
+            $valide = ($role === 'admin') ? 1 : 0; // Les admins sont automatiquement validés
+            $query = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, pseudo, code_postal, date_naissance, role, valide) 
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($query);
-            $stmt->execute([$nom, $prenom, $email, $password, $pseudo, $postal, $birthdate, $role, $compte_valide]);
+            $stmt->execute([$nom, $prenom, $email, $password, $pseudo, $postal, $birthdate, $role, $valide]);
 
             if ($role === 'admin') {
                 $_SESSION['success'] = "Compte administrateur créé avec succès. Vous pouvez vous connecter.";
