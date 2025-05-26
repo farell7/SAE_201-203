@@ -1,4 +1,14 @@
-<?php include 'gm.php'; ?>
+<?php 
+session_start();
+require_once 'includes/redirect_role.php';
+
+// Vérifier si l'utilisateur est connecté et est un admin
+if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'admin') {
+    redirect_to_role_home();
+}
+
+include 'gm.php'; 
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,67 +19,128 @@
     <link rel="stylesheet" href="../CSS/gestion_materiel.css">
 </head>
 <body>
-    <nav>
+    <nav class="nav-container">
         <div class="nav-left">
-            <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
-            <a href="admin.php" class="active">Accueil</a>
-            <a href="reservation_salle.php" class="active">Salles</a>
-            <a href="reservation_materiel.php" class="active">Matériel</a>
-            <a href="validation_compte.php" class="active">Utilisateurs</a>
-            <a href="statistiques.php">Statistiques</a>
+            <a href="admin.php" class="nav-logo">
+                <img src="../img/logo_sansfond.png" alt="Logo">
+                <span>ResaUGE</span>
+            </a>
+            <div class="nav-menu">
+                <a href="admin.php"><i class="fas fa-home"></i> Accueil</a>
+                <a href="reservation_salle.php"><i class="fas fa-door-open"></i> Salles</a>
+                <a href="reservation_materiel.php" class="active"><i class="fas fa-tools"></i> Matériel</a>
+                <a href="validation_compte.php"><i class="fas fa-users"></i> Utilisateurs</a>
+                <a href="statistiques.php"><i class="fas fa-chart-bar"></i> Statistiques</a>
+            </div>
         </div>
         <div class="nav-right">
-            <span>admin admin</span>
-            <a href="../logout.php">Déconnexion</a>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span><?php echo htmlspecialchars($_SESSION['utilisateur']['prenom'] . ' ' . $_SESSION['utilisateur']['nom']); ?></span>
+            </div>
+            <a href="../logout.php">
+                <i class="fas fa-sign-out-alt"></i>
+                Déconnexion
+            </a>
         </div>
     </nav>
 
     <style>
-    nav {
-        background-color: #2f2a85;
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
 
-    .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
+        .nav-container {
+            background-color: #2f2a85;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Noto Sans', sans-serif;
+        }
 
-    .nav-left a {
-        color: white;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-    }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
 
-    .nav-left a:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-    }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+        }
 
-    .nav-right {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
+        .nav-logo img {
+            height: 40px;
+            width: auto;
+        }
 
-    .nav-right span {
-        color: white;
-    }
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
 
-    .nav-right a {
-        color: white;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-    }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
 
-    .nav-right a:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-    }
+        .nav-menu a:hover, .nav-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-menu a i {
+            font-size: 1.1rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .nav-right .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .nav-right a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .nav-right a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
     </style>
 
     <main class="main-content">
@@ -81,7 +152,14 @@
             </div>
         <?php endif; ?>
 
-        <!-- Formulaire d'ajout/modification de matériel -->
+        <div class="actions-container" style="margin-bottom: 2rem;">
+            <a href="admin_demandes_materiel.php" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; background-color: #2f2a85; color: white; font-weight: 500;">
+                <i class="fas fa-list-alt"></i>
+                Voir les demandes de matériel
+            </a>
+        </div>
+
+        <!-- Formulaire d'ajout de matériel -->
         <div class="form-container">
             <h2>Ajouter du matériel</h2>
             <form method="POST" class="form-gestion" enctype="multipart/form-data">
@@ -110,49 +188,6 @@
 
                 <button type="submit" name="ajouter" class="btn btn-ajouter">Ajouter</button>
             </form>
-        </div>
-
-        <!-- Liste des réservations -->
-        <div class="table-container reservations-list">
-            <h2>Réservations en attente</h2>
-            <div class="table-wrapper">
-                <table class="gestion-table compact-table">
-                    <thead>
-                        <tr>
-                            <th>Matériel</th>
-                            <th>Type</th>
-                            <th>Date début</th>
-                            <th>Date fin</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($reservations)): ?>
-                            <tr>
-                                <td colspan="5" style="text-align: center;">Aucune réservation en attente</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($reservations as $reservation): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($reservation['materiel_nom']); ?></td>
-                                    <td><?php echo htmlspecialchars($reservation['materiel_type']); ?></td>
-                                    <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
-                                    <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
-                                    <td>
-                                        <form method="POST">
-                                            <input type="hidden" name="reservation_id" value="<?php echo $reservation['id']; ?>">
-                                            <input type="text" name="signature" placeholder="Signature" required>
-                                            <input type="text" name="commentaire" placeholder="Commentaire">
-                                            <button type="submit" name="valider">Valider</button>
-                                            <button type="submit" name="refuser">Refuser</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
         </div>
 
         <!-- Liste du matériel -->
@@ -201,8 +236,85 @@
     </main>
 
     <footer class="footer">
-        &copy;2025 Université Eiffel. Tous droits réservés.
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ResaUGE</h3>
+                <p>Système de réservation de l'Université Gustave Eiffel</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: support@resauge.fr<br>Tél: 01 23 45 67 89</p>
+            </div>
+            <div class="footer-section">
+                <h3>Liens utiles</h3>
+                <a href="https://www.univ-gustave-eiffel.fr" target="_blank">Site de l'université</a><br>
+                <a href="mentions_legales.php">Mentions légales</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <?php echo date('Y'); ?> ResaUGE - Tous droits réservés</p>
+        </div>
     </footer>
+
+    <style>
+        .footer {
+            background-color: #2f2a85;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 1rem;
+        }
+
+        .footer-section {
+            flex: 1;
+            margin: 0 1rem;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #ddd;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            min-height: calc(100vh - 200px);
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
 
     <!-- Modal pour modification des dates -->
     <div id="modal-dates" class="modal">

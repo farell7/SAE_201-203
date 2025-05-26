@@ -2,7 +2,9 @@
 // Suppression de l'auto-inclusion qui crée une boucle
 // include 'gm.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -61,24 +63,34 @@ try {
         user_id INT NOT NULL,
         date_debut DATETIME NOT NULL,
         date_fin DATETIME NOT NULL,
-        statut ENUM('en_attente', 'validee', 'refusee', 'annulee') DEFAULT 'en_attente',
+        statut ENUM('en_attente', 'validee', 'refusee') NOT NULL DEFAULT 'en_attente',
         commentaire TEXT,
         signature_admin VARCHAR(255),
         date_signature DATETIME,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (materiel_id) REFERENCES materiel(id) ON DELETE CASCADE
+        FOREIGN KEY (materiel_id) REFERENCES materiel(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES utilisateur(id) ON DELETE CASCADE
     )");
+
+    // Vérifier si la colonne created_at existe, sinon l'ajouter
+    try {
+        $pdo->exec("ALTER TABLE reservation_materiel 
+                    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+    } catch (PDOException $e) {
+        // Si l'erreur n'est pas liée à l'existence de la colonne, on la propage
+        if ($e->getCode() !== '42S21') { // 42S21 = Column already exists
+            throw $e;
+        }
+    }
 
     // Récupération du matériel et des réservations
     $materiels = $pdo->query("SELECT * FROM materiel ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
     
     // Requête pour les réservations en attente
-    $sql = "SELECT r.id, r.materiel_id, r.user_id, r.date_debut, r.date_fin, 
-                   r.statut, r.commentaire, r.signature_admin, r.date_signature, r.created_at,
-                   m.nom as materiel_nom, m.type as materiel_type
-            FROM reservation_materiel r 
+    $sql = "SELECT r.*, m.nom as materiel_nom, m.type as materiel_type, u.nom as user_nom, u.prenom as user_prenom
+            FROM reservation_materiel r
             JOIN materiel m ON r.materiel_id = m.id
-            WHERE r.statut = 'en_attente'
+            JOIN utilisateur u ON r.user_id = u.id
             ORDER BY r.created_at DESC";
     
     $reservations = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -321,8 +333,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $date_fin = $_POST['date_fin'];
             $user_id = $_SESSION['user_id']; // Assurez-vous d'avoir l'ID de l'admin en session
             
-            $sql = "INSERT INTO reservation_materiel (materiel_id, user_id, date_debut, date_fin, statut) 
-                    VALUES (?, ?, ?, ?, 'validee')";
+            $sql = "INSERT INTO reservation_materiel (materiel_id, user_id, date_debut, date_fin, statut)
+                    VALUES (?, ?, ?, ?, 'en_attente')";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$materiel_id, $user_id, $date_debut, $date_fin]);
 

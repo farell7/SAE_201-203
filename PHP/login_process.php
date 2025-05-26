@@ -3,16 +3,32 @@ require_once('connexion.php');
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['email']) || !isset($_POST['password'])) {
+        echo "<script>
+            alert('Veuillez remplir tous les champs.');
+            window.location.href = '../index.php';
+        </script>";
+        exit();
+    }
+
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<script>
+            alert('Format d\'email invalide.');
+            window.location.href = '../index.php';
+        </script>";
+        exit();
+    }
+
     $password = $_POST['password'];
     
     try {
         // Vérification de l'utilisateur
-        $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email = ?");
+        $stmt = $conn->prepare("SELECT * FROM utilisateur WHERE email = ?");
         $stmt->execute([$email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = $stmt->fetch();
         
-        if ($user && password_verify($password, $user['password'])) {
+        if ($user && password_verify($password, $user['mot_de_passe'])) {
             // Vérification si le compte est validé
             if ($user['valide'] == 0) {
                 echo "<script>
@@ -34,16 +50,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Redirection selon le rôle
             switch($user['role']) {
                 case 'admin':
-                    header('Location: admin_dashboard.php');
+                    header('Location: admin.php');
                     break;
                 case 'agent':
-                    header('Location: agent_dashboard.php');
+                    header('Location: agent.php');
                     break;
                 case 'teacher':
-                    header('Location: teacher_dashboard.php');
+                    header('Location: teacher.php');
                     break;
                 default:
-                    header('Location: student_dashboard.php');
+                    header('Location: student.php');
             }
             exit();
             
@@ -63,5 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </script>";
         exit();
     }
+} else {
+    header('Location: ../index.php');
+    exit();
 }
 ?> 

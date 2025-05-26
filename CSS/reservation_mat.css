@@ -7,26 +7,63 @@
 }
 
 body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans', sans-serif;
+    background-color: #f5f5f5;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    margin: 0;
-    font-family: 'Noto Sans', sans-serif;
 }
 
 .main-content {
     flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
     display: flex;
     flex-direction: column;
-    padding-bottom: 20px;
 }
 
 .footer {
-    background-color: #1d257e;
+    background-color: #2f2a85;
     color: white;
+    padding: 1.5rem 0;
     text-align: center;
-    padding: 20px 0;
-    width: 100%;
+    margin-top: auto;
+}
+
+.footer p {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.footer-links a:hover {
+    opacity: 0.8;
+}
+
+.footer-info {
+    text-align: right;
 }
 
 /* Section du matériel */
@@ -39,74 +76,161 @@ body {
 /* Grille de matériel */
 .materiel-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 40px;
-    padding: 30px;
-    justify-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
 }
 
-.materiel-card {
+/* Carte de matériel (style similaire aux salles) */
+.salle-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    transition: all 0.4s ease;
-    width: 100%;
-    max-width: 450px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
-    position: relative;
 }
 
-.materiel-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(44, 62, 142, 0.15);
+.salle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.materiel-photo {
+.salle-photo {
     width: 100%;
-    height: 280px;
+    height: 200px;
     object-fit: cover;
-    border-bottom: 2px solid #f0f0f0;
-    transition: transform 0.4s ease;
+    background: #f8f9fa;
 }
 
-.materiel-card:hover .materiel-photo {
-    transform: scale(1.03);
-}
-
-.materiel-info {
-    padding: 30px;
+.salle-info-container {
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    background: linear-gradient(to bottom, #ffffff, #fafafa);
+    gap: 1rem;
 }
 
-.materiel-nom {
-    font-size: 1.8rem;
-    color: #2c3e8e;
+.salle-nom {
+    color: #2f2a85;
+    font-size: 1.5rem;
     margin: 0;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
-    border-bottom: 2px solid #e8eaf6;
-    padding-bottom: 15px;
+    font-weight: 600;
 }
 
-.materiel-type {
+.salle-info {
     color: #666;
-    font-size: 1.1rem;
     margin: 0;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.materiel-description {
-    color: #666;
-    margin: 15px 0;
-    font-style: italic;
-    line-height: 1.4;
+.salle-description {
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.btn-reserver {
+    background-color: #2f2a85;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.btn-reserver:hover {
+    background-color: #231f63;
+    transform: translateY(-2px);
+}
+
+.materiel-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.status-disponible {
+    background-color: rgba(46, 125, 50, 0.1);
+    color: #2e7d32;
+}
+
+.status-indisponible {
+    background-color: rgba(198, 40, 40, 0.1);
+    color: #c62828;
+}
+
+.no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(45deg, #f1f3f9, #e8eaf6);
+    color: #2f2a85;
+    font-size: 0.9rem;
+    gap: 0.75rem;
+}
+
+.no-image i {
+    font-size: 2.5rem;
+    opacity: 0.5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .materiel-grid {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .footer-info {
+        text-align: center;
+    }
+
+    .salle-photo {
+        height: 180px;
+    }
+
+    .salle-info-container {
+        padding: 1.25rem;
+    }
+
+    .mes-reservations {
+        margin: 2rem 0;
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
 }
 
 /* Formulaire de réservation */
@@ -120,19 +244,20 @@ body {
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
+    color: #495057;
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
     border-radius: 4px;
 }
 
@@ -188,146 +313,125 @@ body {
     color: white;
 }
 
-/* Boutons */
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s;
-}
-
-.btn-reserver {
-    width: 100%;
-    padding: 0.8rem;
-    background: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.btn-reserver:hover {
-    background: #1976D2;
-}
-
 /* Alertes */
 .alert {
-    padding: 1rem 2rem;
-    margin: 1rem 2rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
     border-radius: 4px;
-    font-weight: 500;
+    display: flex;
+    align-items: center;
 }
 
 .alert-success {
-    background: #d4edda;
+    background-color: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
 .alert-error {
-    background: #f8d7da;
+    background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-    .materiel-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 30px;
-        padding: 20px;
-    }
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
 }
 
-@media (max-width: 768px) {
-    .materiel-grid {
-        grid-template-columns: 1fr;
-        padding: 15px;
-    }
-
-    .materiel-card {
-        max-width: 100%;
-    }
-
-    .materiel-photo {
-        height: 240px;
-    }
-
-    .materiel-info {
-        padding: 20px;
-    }
-
-    .modal-content {
-        width: 95%;
-        margin: 2% auto;
-        padding: 20px;
-    }
-
-    .form-reservation {
-        padding: 20px;
-    }
-
-    .form-group input {
-        padding: 10px;
-    }
-
-    .btn-confirmer {
-        padding: 12px 24px;
-        font-size: 14px;
-    }
-
-    .table-container {
-        margin: 20px 10px;
-        padding: 15px;
-    }
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
 }
 
 /* Modal et Calendrier */
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    overflow-y: auto;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
 }
 
 .modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 800px;
     position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    background-color: white;
+    margin: 10% auto;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .close {
     position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 28px;
-    font-weight: bold;
+    right: 1rem;
+    top: 1rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    color: #666;
-    z-index: 1;
+    color: #6c757d;
 }
 
 .close:hover {
-    color: #000;
+    color: #343a40;
 }
 
 .modal-body {
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.datetime-inputs {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.datetime-field {
+    flex: 1;
+}
+
+.datetime-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2f2a85;
+    font-weight: 500;
+}
+
+.datetime-field input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn-demande {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 1rem;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.btn-demande:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
 }
 
 /* Styles pour le calendrier */
@@ -346,144 +450,111 @@ body {
     border-radius: 12px;
     margin-top: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    display: block !important;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.form-group {
-    margin-bottom: 20px;
+.datetime-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #2c3e50;
+.datetime-group .form-group {
+    flex: 1;
+    margin-bottom: 0;
 }
 
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 15px;
-    transition: border-color 0.3s ease;
+.btn-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
-.form-group input:focus {
-    border-color: #2c3e8e;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(44, 62, 142, 0.1);
-}
-
-.btn-reserver {
-    background-color: #2c3e8e;
-    color: white;
+.btn-confirmer, .btn-demande {
+    flex: 1;
+    padding: 0.75rem;
     border: none;
-    padding: 16px 32px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 15px;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
     transition: all 0.3s ease;
-    width: 100%;
-    margin-top: 20px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 12px rgba(44, 62, 142, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-reserver:hover {
-    background-color: #3a4db0;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(44, 62, 142, 0.25);
-}
-
-.btn-reserver:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(44, 62, 142, 0.2);
+    text-align: center;
+    text-decoration: none;
 }
 
 .btn-confirmer {
-    background-color: #2c3e8e;
+    background-color: #2f2a85;
     color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    width: 100%;
-    margin-top: 15px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
-.btn-confirmer:hover {
-    background-color: #3a4db0;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(44, 62, 142, 0.2);
+.btn-demande {
+    background-color: #28a745;
+    color: white;
 }
 
-.btn-confirmer:active {
-    transform: translateY(0);
+.btn-confirmer:hover, .btn-demande:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 /* Navigation */
 .nav-container {
-    background-color: #1d257e;
-    padding: 10px 20px;
+    background-color: #2f2a85;
+    padding: 1rem 2rem;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: flex-start;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.logo {
+.nav-container .logo {
     height: 40px;
-    margin-right: 30px;
+    width: auto;
 }
 
 .nav-menu {
     display: flex;
-    gap: 20px;
-    margin-right: auto;
+    gap: 2rem;
 }
 
 .nav-menu a {
     color: white;
     text-decoration: none;
-    padding: 8px 16px;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: background-color 0.3s;
 }
 
-.nav-menu a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
+.nav-menu a:hover,
 .nav-menu a.active {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .profile-menu {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-left: auto;
+    gap: 1rem;
 }
 
 .profile-icon {
-    height: 32px;
     width: 32px;
+    height: 32px;
     border-radius: 50%;
 }
 
-.menu-icon {
+.logout-btn {
     color: white;
-    cursor: pointer;
-    font-size: 24px;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Styles pour FullCalendar */
@@ -544,4 +615,410 @@ body {
     border-color: #2c3e8e;
     outline: none;
     box-shadow: 0 0 0 2px rgba(44, 62, 142, 0.1);
+}
+
+h1 {
+    color: #2f2a85;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+/* Tableau des réservations */
+.mes-reservations {
+    margin-top: 3rem;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.mes-reservations h2 {
+    color: #2f2a85;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 0 1rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    padding: 0 1rem;
+    border-radius: 12px;
+}
+
+.reservations-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+}
+
+.reservations-table th,
+.reservations-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.reservations-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2f2a85;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.reservations-table tr:last-child td {
+    border-bottom: none;
+}
+
+.reservations-table tr:hover td {
+    background-color: #f8f9fa;
+}
+
+.statut-en_attente {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #856404;
+    background-color: #fff3cd;
+}
+
+.statut-validee {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #155724;
+    background-color: #d4edda;
+}
+
+.statut-refusee {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #721c24;
+    background-color: #f8d7da;
+}
+
+/* Styles généraux */
+body {
+    font-family: 'Noto Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+/* Navigation */
+nav {
+    background-color: #1a237e;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-left a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-left a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-left a.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.logo {
+    height: 40px;
+}
+
+/* Contenu principal */
+.main-content {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+h1 {
+    color: #1a237e;
+    margin-bottom: 2rem;
+}
+
+/* Grille de matériel */
+.materiel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.materiel-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.materiel-card:hover {
+    transform: translateY(-5px);
+}
+
+.materiel-image {
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.materiel-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.materiel-info {
+    padding: 1.5rem;
+}
+
+.materiel-info h3 {
+    margin: 0 0 0.5rem;
+    color: #1a237e;
+}
+
+.type {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.description {
+    font-size: 0.9rem;
+    color: #444;
+    margin-bottom: 1.5rem;
+}
+
+/* Boutons */
+.btn-reserver {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #1a237e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-reserver:hover {
+    background-color: #283593;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: white;
+    margin: 2rem auto;
+    padding: 2rem;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    position: absolute;
+    right: 1.5rem;
+    top: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.modal-body {
+    margin-top: 1.5rem;
+}
+
+/* Formulaire de réservation */
+.form-reservation {
+    margin-top: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.btn-confirmer {
+    background-color: #1a237e;
+    color: white;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-confirmer:hover {
+    background-color: #283593;
+}
+
+/* Tableau des réservations */
+.historique-reservations {
+    margin-top: 3rem;
+}
+
+.reservations-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.reservations-table th,
+.reservations-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.reservations-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Statuts */
+.statut-validee {
+    background-color: #28a745;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.statut-en_attente {
+    background-color: #ffc107;
+    color: black;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.statut-refusee {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+/* Styles pour le calendrier */
+#calendar {
+    margin-bottom: 2rem;
+}
+
+.fc {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.fc-toolbar-title {
+    font-size: 1.2rem !important;
+    color: #1a237e;
+}
+
+.fc-button-primary {
+    background-color: #1a237e !important;
+    border-color: #1a237e !important;
+}
+
+.fc-button-primary:hover {
+    background-color: #283593 !important;
+    border-color: #283593 !important;
+}
+
+.fc-event {
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+.fc-day-today {
+    background-color: rgba(26, 35, 126, 0.05) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .materiel-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+        padding: 1rem;
+    }
+
+    .reservations-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .mes-reservations {
+        margin: 2rem -1rem 0;
+        padding: 1rem;
+    }
+    
+    .table-wrapper {
+        padding: 0 0.5rem;
+    }
 } 

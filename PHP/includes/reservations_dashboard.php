@@ -195,7 +195,7 @@
                 <form id="addReservationForm" action="add_reservation.php" method="POST">
                     <div class="mb-3">
                         <label class="form-label">Utilisateur</label>
-                        <select class="form-control" name="utilisateur_id" required>
+                        <select class="form-control" name="user_id" required>
                             <?php foreach ($utilisateurs as $utilisateur): ?>
                             <option value="<?php echo $utilisateur['id']; ?>">
                                 <?php echo htmlspecialchars($utilisateur['prenom'] . ' ' . $utilisateur['nom']); ?>

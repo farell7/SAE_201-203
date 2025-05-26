@@ -1,5 +1,5 @@
 <?php
-require_once('../includes/db.php');
+require_once('connexion.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nom = $_POST['nom'];

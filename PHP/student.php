@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once 'includes/redirect_role.php';
+
 if (!isset($_SESSION['utilisateur'])) {
     header('Location: ../index.php');
     exit();
@@ -7,8 +9,7 @@ if (!isset($_SESSION['utilisateur'])) {
 
 $user = $_SESSION['utilisateur'];
 if ($user['role'] !== 'student') {
-    header('Location: dashboard.php');
-    exit();
+    redirect_to_role_home();
 }
 ?>
 <!DOCTYPE html>

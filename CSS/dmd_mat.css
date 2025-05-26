@@ -1,0 +1,278 @@
+/* Styles généraux */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans', sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Styles de la navbar */
+.nav-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #2f2a85;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo {
+    height: 40px;
+    margin-right: 2rem;
+    filter: brightness(0) invert(1);
+}
+
+.nav-menu {
+    display: flex;
+    gap: 2rem;
+    margin-right: auto;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-menu a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-menu a.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.profile-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.profile-icon {
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    background-color: white;
+}
+
+.menu-icon {
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+}
+
+/* Styles du formulaire de demande */
+.demande-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.logo-uge {
+    height: 80px;
+    object-fit: contain;
+}
+
+.header-right {
+    text-align: right;
+}
+
+.header-right h2 {
+    color: #2f2a85;
+    margin: 0 0 0.5rem 0;
+}
+
+.header-right p {
+    color: #666;
+    margin: 0;
+}
+
+.form-title {
+    color: #2f2a85;
+    text-align: center;
+    margin: 1.5rem 0;
+    font-size: 1.8rem;
+}
+
+.instructions {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid #2f2a85;
+    border-radius: 0 4px 4px 0;
+}
+
+.instructions p {
+    margin: 0.5rem 0;
+}
+
+.instructions strong {
+    color: #2f2a85;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    background: white;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 1rem;
+}
+
+td:first-child {
+    width: 200px;
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="time"],
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input:focus,
+select:focus {
+    border-color: #2f2a85;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(47, 42, 133, 0.1);
+}
+
+.participants-list {
+    border: 1px solid #ddd;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.participants-list h3 {
+    color: #2f2a85;
+    margin-top: 0;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.warning {
+    color: #dc3545;
+    font-style: italic;
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background-color: #fff3f3;
+    border-left: 4px solid #dc3545;
+    border-radius: 0 4px 4px 0;
+}
+
+.submit-btn {
+    background-color: #2f2a85;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #231f63;
+}
+
+/* Style pour les champs obligatoires */
+label::after {
+    content: "*";
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+/* Style pour le bouton d'ajout de matériel */
+.btn-add-materiel {
+    background-color: #28a745;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.btn-add-materiel:hover {
+    background-color: #218838;
+}
+
+/* Style pour la liste de matériel */
+#materiel-list {
+    margin-bottom: 1rem;
+}
+
+#materiel-list .form-group {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .demande-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-right {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    td:first-child {
+        width: auto;
+    }
+
+    .nav-menu {
+        display: none;
+    }
+
+    .menu-icon {
+        display: block;
+    }
+} 

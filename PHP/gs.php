@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -60,7 +62,7 @@ try {
         user_id INT NOT NULL,
         date_debut DATETIME NOT NULL,
         date_fin DATETIME NOT NULL,
-        statut ENUM('en_attente', 'validee', 'refusee', 'annulee') DEFAULT 'en_attente',
+        statut ENUM('en_attente', 'validee', 'refusee') NOT NULL DEFAULT 'en_attente',
         commentaire TEXT,
         signature_admin VARCHAR(255),
         date_signature DATETIME,
@@ -144,10 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$id]);
                 $photo = $stmt->fetchColumn();
                 
-                // Supprimer d'abord toutes les réservations associées
-                $pdo->prepare("DELETE FROM reservation_salle WHERE salle_id = ?")->execute([$id]);
-                
-                // Puis supprimer la salle
+                // Supprimer la salle
                 $pdo->prepare("DELETE FROM salle WHERE id = ?")->execute([$id]);
                 
                 // Supprimer la photo si elle existe
@@ -158,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Valider la transaction
                 $pdo->commit();
                 
-                $message = "La salle et ses réservations ont été supprimées avec succès.";
+                $message = "La salle a été supprimée avec succès.";
                 $messageType = "success";
             } catch (Exception $e) {
                 // En cas d'erreur, annuler la transaction
@@ -203,10 +202,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $materiels = $pdo->query("SELECT * FROM materiel ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-$sql = "SELECT rs.*, s.nom as salle_nom 
-        FROM reservation_salle rs 
-        JOIN salle s ON rs.salle_id = s.id 
-        WHERE rs.statut = 'en_attente' 
+$sql = "SELECT rs.*, s.nom as salle_nom, u.nom as user_nom, u.prenom as user_prenom
+        FROM reservation_salle rs
+        JOIN salle s ON rs.salle_id = s.id
+        JOIN utilisateur u ON rs.user_id = u.id
         ORDER BY rs.date_debut DESC";
 $reservations = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 

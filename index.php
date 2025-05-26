@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_P
         
         if ($user && password_verify($password, $user['mot_de_passe'])) {
             // Vérifier si le compte est validé (sauf pour les administrateurs)
-            if ($user['role'] !== 'admin' && !$user['compte_valide']) {
+            if ($user['role'] !== 'admin' && !$user['valide']) {
                 $_SESSION['error'] = 'Votre compte est en attente de validation par un administrateur.';
                 header('Location: ' . BASE_PATH . '/index.php');
                 exit();

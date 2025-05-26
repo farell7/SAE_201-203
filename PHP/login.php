@@ -15,7 +15,7 @@ $password = $_POST['password'];
 
 try {
     // Préparation de la requête
-    $query = "SELECT * FROM utilisateurs WHERE email = :email";
+    $query = "SELECT * FROM utilisateur WHERE email = :email";
     $stmt = $connexion->prepare($query);
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();

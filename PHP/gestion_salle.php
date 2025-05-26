@@ -1,4 +1,16 @@
-<?php include 'gs.php'; ?>
+<?php 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'includes/redirect_role.php';
+
+// Vérifier si l'utilisateur est connecté et est un admin
+if (!isset($_SESSION['utilisateur']) || $_SESSION['utilisateur']['role'] !== 'admin') {
+    redirect_to_role_home();
+}
+
+include 'gs.php'; 
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -18,67 +30,128 @@
     <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.10/main.min.js'></script>
 </head>
 <body>
-    <nav>
+    <nav class="nav-container">
         <div class="nav-left">
-            <img src="../img/logo_sansfond.png" alt="Logo" class="logo">
-            <a href="admin.php" class="active">Accueil</a>
-            <a href="reservation_salle.php" class="active">Salles</a>
-            <a href="reservation_materiel.php" class="active">Matériel</a>
-            <a href="validation_compte.php" class="active">Utilisateurs</a>
-            <a href="statistiques.php">Statistiques</a>
+            <a href="admin.php" class="nav-logo">
+                <img src="../img/logo_sansfond.png" alt="Logo">
+                <span>ResaUGE</span>
+            </a>
+            <div class="nav-menu">
+                <a href="admin.php"><i class="fas fa-home"></i> Accueil</a>
+                <a href="reservation_salle.php" class="active"><i class="fas fa-door-open"></i> Salles</a>
+                <a href="reservation_materiel.php"><i class="fas fa-tools"></i> Matériel</a>
+                <a href="validation_compte.php"><i class="fas fa-users"></i> Utilisateurs</a>
+                <a href="statistiques.php"><i class="fas fa-chart-bar"></i> Statistiques</a>
+            </div>
         </div>
         <div class="nav-right">
-            <span>admin admin</span>
-            <a href="../logout.php">Déconnexion</a>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span><?php echo htmlspecialchars($_SESSION['utilisateur']['prenom'] . ' ' . $_SESSION['utilisateur']['nom']); ?></span>
+            </div>
+            <a href="../logout.php">
+                <i class="fas fa-sign-out-alt"></i>
+                Déconnexion
+            </a>
         </div>
     </nav>
 
     <style>
-    nav {
-        background-color: #2f2a85;
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
 
-    .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
+        .nav-container {
+            background-color: #2f2a85;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Noto Sans', sans-serif;
+        }
 
-    .nav-left a {
-        color: white;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-    }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
 
-    .nav-left a:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-    }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+        }
 
-    .nav-right {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
+        .nav-logo img {
+            height: 40px;
+            width: auto;
+        }
 
-    .nav-right span {
-        color: white;
-    }
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
 
-    .nav-right a {
-        color: white;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-    }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
 
-    .nav-right a:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-    }
+        .nav-menu a:hover, .nav-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-menu a i {
+            font-size: 1.1rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .nav-right .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .nav-right a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .nav-right a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
     </style>
 
     <main class="main-content">
@@ -184,7 +257,6 @@
                                 <input type="hidden" name="salle_id" value="<?php echo $salle['id']; ?>">
                                 <button type="submit" name="supprimer" class="btn btn-supprimer">Supprimer</button>
                             </form>
-                            <button type="button" class="btn btn-reserver" onclick="nouvelleReservation(<?php echo $salle['id']; ?>)">Réserver</button>
                         </td>
                     </tr>
                     <?php endforeach; ?>

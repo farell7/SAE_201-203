@@ -18,13 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserver'])) {
     $date_debut = $_POST['date_debut'];
     $date_fin = $_POST['date_fin'];
 
-    // Vérifier si le matériel est disponible pour cette période
-    $stmt = $connexion->prepare("SELECT COUNT(*) FROM reservation_materiel 
-                           WHERE materiel_id = ? 
-                           AND ((date_debut BETWEEN ? AND ?) 
-                           OR (date_fin BETWEEN ? AND ?))
-                           AND statut != 'refusee'");
-    $stmt->execute([$materiel_id, $date_debut, $date_fin, $date_debut, $date_fin]);
+    // Vérifier les réservations existantes
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM reservation_materiel
+                         WHERE materiel_id = ? 
+                         AND statut = 'validee'
+                         AND (
+                             (date_debut BETWEEN ? AND ?)
+                             OR (date_fin BETWEEN ? AND ?)
+                             OR (? BETWEEN date_debut AND date_fin)
+                         )");
+    $stmt->execute([$materiel_id, $date_debut, $date_fin, $date_debut, $date_fin, $date_debut]);
     $count = $stmt->fetchColumn();
 
     if ($count > 0) {
@@ -32,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserver'])) {
         $messageType = 'error';
     } else {
         // Insérer la réservation
-        $stmt = $connexion->prepare("INSERT INTO reservation_materiel (materiel_id, user_id, date_debut, date_fin, statut) 
-                               VALUES (?, ?, ?, ?, 'en_attente')");
+        $stmt = $conn->prepare("INSERT INTO reservation_materiel (materiel_id, user_id, date_debut, date_fin, statut)
+                             VALUES (?, ?, ?, ?, 'en_attente')");
         if ($stmt->execute([$materiel_id, $user_id, $date_debut, $date_fin])) {
             $message = "Votre demande de réservation a été enregistrée.";
             $messageType = 'success';
@@ -45,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserver'])) {
 }
 
 // Récupérer la liste du matériel avec leurs réservations
-$stmt = $connexion->query("SELECT m.*, 
+$stmt = $conn->query("SELECT m.*, 
     GROUP_CONCAT(
         CONCAT(
             rm.date_debut, '|',
@@ -59,11 +62,12 @@ $stmt = $connexion->query("SELECT m.*,
 $materiels = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Récupérer les réservations de l'utilisateur
-$stmt = $connexion->prepare("SELECT rm.*, m.nom as materiel_nom, m.type as materiel_type 
-                        FROM reservation_materiel rm 
-                        JOIN materiel m ON rm.materiel_id = m.id 
-                        WHERE rm.user_id = ? 
-                        ORDER BY rm.date_debut DESC");
+$sql = "SELECT rm.*, m.nom as materiel_nom, m.type as materiel_type
+        FROM reservation_materiel rm
+        JOIN materiel m ON rm.materiel_id = m.id
+        WHERE rm.user_id = ?
+        ORDER BY rm.created_at DESC";
+$stmt = $conn->prepare($sql);
 $stmt->execute([$_SESSION['utilisateur']['id']]);
 $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>

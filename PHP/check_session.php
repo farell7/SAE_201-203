@@ -1,12 +1,13 @@
 <?php
 session_start();
+require_once 'includes/redirect_role.php';
 
 // Définir le chemin de base
 define('BASE_PATH', '/SAE_201-203');
 
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['utilisateur'])) {
-    header('Location: ' . BASE_PATH . '/index.php');
+    header('Location: ../index.php');
     exit();
 }
 
@@ -19,27 +20,29 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
 // Vérifier les autorisations
 switch($current_page) {
     case 'admin':
+    case 'admin_demandes_materiel':
+    case 'gestion_materiel':
+    case 'gestion_salle':
+    case 'validation_compte':
         if ($role !== 'admin') {
-            header('Location: ' . BASE_PATH . '/index.php');
-            exit();
+            redirect_to_role_home();
+        }
+        break;
+    case 'student':
+    case 'reservation_materiel':
+    case 'demande_materiel':
+        if ($role !== 'student') {
+            redirect_to_role_home();
         }
         break;
     case 'teacher':
         if ($role !== 'teacher') {
-            header('Location: ' . BASE_PATH . '/index.php');
-            exit();
+            redirect_to_role_home();
         }
         break;
     case 'agent':
         if ($role !== 'agent') {
-            header('Location: ' . BASE_PATH . '/index.php');
-            exit();
-        }
-        break;
-    case 'student':
-        if ($role !== 'student') {
-            header('Location: ' . BASE_PATH . '/index.php');
-            exit();
+            redirect_to_role_home();
         }
         break;
 }

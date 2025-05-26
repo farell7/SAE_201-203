@@ -18,13 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserver'])) {
     $date_debut = $_POST['date_debut'];
     $date_fin = $_POST['date_fin'];
 
-    // Vérifier si la salle est disponible pour cette période
-    $stmt = $connexion->prepare("SELECT COUNT(*) FROM reservation_salle 
-                           WHERE salle_id = ? 
-                           AND ((date_debut BETWEEN ? AND ?) 
-                           OR (date_fin BETWEEN ? AND ?))
-                           AND statut != 'refusee'");
-    $stmt->execute([$salle_id, $date_debut, $date_fin, $date_debut, $date_fin]);
+    // Vérifier les réservations existantes
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM reservation_salle
+                         WHERE salle_id = ? 
+                         AND statut = 'validee'
+                         AND (
+                             (date_debut BETWEEN ? AND ?)
+                             OR (date_fin BETWEEN ? AND ?)
+                             OR (? BETWEEN date_debut AND date_fin)
+                         )");
+    $stmt->execute([$salle_id, $date_debut, $date_fin, $date_debut, $date_fin, $date_debut]);
     $count = $stmt->fetchColumn();
 
     if ($count > 0) {
@@ -32,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserver'])) {
         $messageType = 'error';
     } else {
         // Insérer la réservation
-        $stmt = $connexion->prepare("INSERT INTO reservation_salle (salle_id, user_id, date_debut, date_fin, statut) 
-                               VALUES (?, ?, ?, ?, 'en_attente')");
+        $stmt = $conn->prepare("INSERT INTO reservation_salle (salle_id, user_id, date_debut, date_fin, statut)
+                             VALUES (?, ?, ?, ?, 'en_attente')");
         if ($stmt->execute([$salle_id, $user_id, $date_debut, $date_fin])) {
             $message = "Votre demande de réservation a été enregistrée.";
             $messageType = 'success';
@@ -45,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserver'])) {
 }
 
 // Récupérer la liste des salles avec leurs réservations
-$stmt = $connexion->query("SELECT s.*, 
+$stmt = $conn->query("SELECT s.*, 
     GROUP_CONCAT(
         CONCAT(
             rs.date_debut, '|',
@@ -59,11 +62,12 @@ $stmt = $connexion->query("SELECT s.*,
 $salles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Récupérer les réservations de l'utilisateur
-$stmt = $connexion->prepare("SELECT rs.*, s.nom as salle_nom, s.capacite as salle_capacite 
-                        FROM reservation_salle rs 
-                        JOIN salle s ON rs.salle_id = s.id 
-                        WHERE rs.user_id = ? 
-                        ORDER BY rs.date_debut DESC");
+$sql = "SELECT rs.*, s.nom as salle_nom, s.capacite
+        FROM reservation_salle rs
+        JOIN salle s ON rs.salle_id = s.id
+        WHERE rs.user_id = ?
+        ORDER BY rs.created_at DESC";
+$stmt = $conn->prepare($sql);
 $stmt->execute([$_SESSION['utilisateur']['id']]);
 $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?> 
