@@ -148,7 +148,7 @@ CREATE TABLE `demande_materiel` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Insertion des données de test
-INSERT INTO `utilisateur` VALUES (1,'farel','farel','farel@gmail.com','$2y$10$YourHashedPasswordHere','farel','77420','2000-01-01','admin',1,NULL,NULL,'2025-05-26 14:00:00');
+INSERT INTO `utilisateur` VALUES (1,'farel','farel','farel@gmail.com','$2y$10$3YEGQbHPECHGEpRrEXg0qeABGG1EVe6TJUXdYZkqFGIHQkPVOKii.','farel','77420','2000-01-01','admin',1,NULL,NULL,'2025-05-26 14:00:00');
 
 INSERT INTO `materiel` VALUES 
 (10,'gopro','gopro','gopro','gopro','bon','uploads/materiel/683472b250781_gopro.jpg',1,'2025-05-26 13:54:58'),
